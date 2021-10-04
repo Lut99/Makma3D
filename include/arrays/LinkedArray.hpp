@@ -301,6 +301,13 @@ namespace Makma3D::Tools {
         /* Adds a whole linked array worth of new elements to this linked array, leaving the original array in an unused state (moving it). Does not require a move constructor to be defined. */
         LinkedArray& operator+=(LinkedArray&& elems);
 
+        /* Addition operator for an element and a mathing LinkedArray to prepend it. Requires the element to be copy constructible. */
+        template <typename U = LinkedArray&>
+        friend inline auto operator+(const LinkedArray& linked_array, const T& elem) -> std::enable_if_t<C, U> { return LinkedArray(linked_array).push_front(elem); }
+        /* Addition operator for an element and a mathing LinkedArray to prepend it. Requires the element to be move constructible. */
+        template <typename U = LinkedArray&>
+        friend inline auto operator+(const LinkedArray& linked_array, T&& elem) -> std::enable_if_t<M, U> { return LinkedArray(linked_array).push_front(std::move(elem)); }
+
         /* Adds a new element of type T to the start of the linked array, initializing it with its default constructor. Only needs a default constructor to be present. */
         template <typename U = LinkedArray&>
         auto push_front() -> std::enable_if_t<D, U>;

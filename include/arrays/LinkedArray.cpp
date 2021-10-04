@@ -13,6 +13,7 @@
  *   linked list.
 **/
 
+#include <cstring>
 #include <stdexcept>
 
 #include "LinkedArray.hpp"
@@ -24,7 +25,7 @@ template <class T, class SIZE_T>
 Makma3D::Tools::_linked_array_intern::LinkedArrayStorage<T, SIZE_T>::LinkedArrayStorage() :
     head(nullptr),
     tail(nullptr),
-    length(0)
+    size(0)
 {}
 
 /* Copy constructor for the LinkedArrayStorage class. */
@@ -32,7 +33,7 @@ template <class T, class SIZE_T>
 Makma3D::Tools::_linked_array_intern::LinkedArrayStorage<T, SIZE_T>::LinkedArrayStorage(const LinkedArrayStorage& other) :
     head(nullptr),
     tail(nullptr),
-    length(other.length)
+    size(other.size)
 {
     // If there's nothing to copy, stop
     if (other.head == nullptr) { return; }
@@ -72,9 +73,11 @@ template <class T, class SIZE_T>
 Makma3D::Tools::_linked_array_intern::LinkedArrayStorage<T, SIZE_T>::LinkedArrayStorage(LinkedArrayStorage&& other) :
     head(other.head),
     tail(other.tail),
-    length(other.length)
+    size(other.size)
 {
     other.head = nullptr;
+    other.tail = nullptr;
+    other.size = 0;
 }
 
 /* Destructor for the LinkedArrayStorage class. */

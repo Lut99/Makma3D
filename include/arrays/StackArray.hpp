@@ -69,6 +69,13 @@ namespace Makma3D::Tools {
         template <typename U = StackArray&>
         inline auto operator+=(T&& elem) -> std::enable_if_t<M, U> { return this->push_back(std::move(elem)); }
 
+        /* Addition operator for an element and a mathing StackArray to prepend it. Requires the element to be copy constructible. */
+        template <typename U = StackArray&>
+        friend inline auto operator+(const StackArray& stack_array, const T& elem) -> std::enable_if_t<C, U> { return StackArray(stack_array).push_front(elem); }
+        /* Addition operator for an element and a mathing StackArray to prepend it. Requires the element to be move constructible. */
+        template <typename U = StackArray&>
+        friend inline auto operator+(const StackArray& stack_array, T&& elem) -> std::enable_if_t<M, U> { return StackArray(stack_array).push_front(std::move(elem)); }
+
         /* Adds a new element of type T to the front of the array, pushing the rest back. The element is initialized with with its default constructor. Needs a default constructor to be present, but also to be move assignable in some way to be moved around in the array. */
         template <typename U = StackArray&>
         auto push_front() -> std::enable_if_t<D && M, U>;
@@ -158,5 +165,8 @@ namespace Makma3D::Tools {
     };
 
 }
+
+// Include the .cpp since it's all templated
+#include "StackArray.cpp"
 
 #endif

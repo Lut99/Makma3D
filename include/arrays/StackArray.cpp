@@ -15,6 +15,7 @@
  *   the case when it's entirely heap-allocated.
 **/
 
+#include <cstring>
 #include <stdexcept>
 #include <algorithm>
 

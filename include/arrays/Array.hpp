@@ -70,6 +70,13 @@ namespace Makma3D::Tools {
         template <typename U = Array&>
         inline auto operator+=(T&& elem) -> std::enable_if_t<M, U> { return this->push_back(std::move(elem)); }
 
+        /* Addition operator for an element and a mathing Array to prepend it. Requires the element to be copy constructible. */
+        template <typename U = Array&>
+        friend inline auto operator+(const Array& array, const T& elem) -> std::enable_if_t<C, U> { return Array(array).push_front(elem); }
+        /* Addition operator for an element and a mathing Array to prepend it. Requires the element to be move constructible. */
+        template <typename U = Array&>
+        friend inline auto operator+(const Array& array, T&& elem) -> std::enable_if_t<M, U> { return Array(array).push_front(std::move(elem)); }
+
         /* Creates a new array that is a copy of this array with the elements in the given array copied and appended to them. Note that this requires the elements to be copy constructible. */
         template <typename U = Array>
         inline auto operator+(const Array& elems) const -> std::enable_if_t<C, U> { return Array(*this).operator+=(elems); }

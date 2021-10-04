@@ -12,6 +12,7 @@
  *   <Todo>
 **/
 
+#include <cstring>
 #include <stdexcept>
 #include <algorithm>
 

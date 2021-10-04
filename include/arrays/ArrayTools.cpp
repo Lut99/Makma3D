@@ -102,14 +102,17 @@ template <class T, size_t SIZE, class SIZE_T>
 Makma3D::Tools::_array_intern::StackArrayStorage<T, SIZE, SIZE_T>::StackArrayStorage(StackArrayStorage&& other) :
     size(other.size)
 {
-    // Move everything over
-    if constexpr (std::is_trivially_copy_constructible<T>::value) {
+    // Move everything over, then delete everything
+    if constexpr (std::is_trivially_move_constructible<T>::value) {
         memmove(this->elements, other.elements, this->size * sizeof(T));
     } else {
         for (SIZE_T i = 0; i < this->size; i++) {
             new(this->elements + i) T(std::move(other.elements[i]));
         }
     }
+
+    // Reset the other
+    other.size = 0;
 }
 
 /* Destructor for the StackArrayStorage class. */
