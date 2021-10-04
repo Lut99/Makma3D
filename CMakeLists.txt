@@ -5,7 +5,10 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Set the project name & version
-project(Makma3D VERSION 1.0.0)
+project(Makma3D VERSION 0.1.0)
+
+# Tell CMake's windows edition to export all symbols
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols")
 
 # If we're on Windows, prefix the GLFW path
 IF(WIN32)
@@ -38,29 +41,25 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
 # Define all include directories
 get_target_property(GLFW_DIR glfw INTERFACE_INCLUDE_DIRECTORIES)
-SET(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" "${Vulkan_INCLUDE_DIRS}" "${GLFW_DIR}")
+SET(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/src" "${Vulkan_INCLUDE_DIRS}" "${GLFW_DIR}")
 
 # Load the libraries
 add_subdirectory(src)
 
 
 
-##### RASTERIZER TARGET #####
+
+
+##### TEST TARGET #####
 # Specify which file we want to compile
-add_executable(rasterizer ${PROJECT_SOURCE_DIR}/src/Main.cpp)
-# Set the output to the bin directory
-set_target_properties(rasterizer
-                      PROPERTIES 
-                      RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/bin
-                      RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin
-                      )
+add_executable(test ${PROJECT_SOURCE_DIR}/test/Main.cpp)
 
 # Add the include directories for this target
-target_include_directories(rasterizer PUBLIC "${INCLUDE_DIRS}")
+target_include_directories(test PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 # Add which libraries to link
-target_link_libraries(rasterizer PUBLIC
-                      ${EXTRA_LIBS}
+target_link_libraries(test PUBLIC
+                      ${Makma3D_LIBRARIES}
                       ${Vulkan_LIBRARIES}
                       glfw)
 
