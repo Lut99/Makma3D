@@ -13,4 +13,9 @@
  *   everything needed for the basic experience.
 **/
 
+#ifndef MAKMA3D_HPP
+#define MAKMA3D_HPP
 
+#include "instance/Instance.hpp"
+
+#endif
