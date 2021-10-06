@@ -20,9 +20,10 @@ using namespace Makma3D;
 
 /***** ENTRY POINT *****/
 int main(int argc, const char** argv) {
-    /* Setup the Makma3D library. */
+    // Setup the Makma3D library
     Makma3D::Instance instance("Test", VK_MAKE_VERSION(0, 1, 0), {}, {});
 
+    // Setup the window to render to
     
 
 }

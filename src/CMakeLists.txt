@@ -1,4 +1,5 @@
 # Add the subdirectories
+add_subdirectory(window)
 add_subdirectory(glfw)
 add_subdirectory(vulkanic)
 add_subdirectory(instance)
