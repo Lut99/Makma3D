@@ -19,7 +19,7 @@
 #endif
 #include <iostream>
 
-#include "Logger.hpp"
+#include "tools/Logger.hpp"
 
 using namespace std;
 using namespace Makma3D;
@@ -28,7 +28,7 @@ using namespace Makma3D::Tools;
 
 /***** GLOBALS *****/
 /* Global instance of the Logger everyone uses. */
-Logger Tools::logger(std::cout, std::cerr, Verbosity::none);
+Logger Makma3D::logger(std::cout, std::cerr, Verbosity::none);
 
 
 

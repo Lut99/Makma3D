@@ -1,12 +1,11 @@
 # Specify the libraries in this directory
-add_library(Tools STATIC ${CMAKE_CURRENT_SOURCE_DIR}/Common.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp)
+add_library(Tools ${CMAKE_CURRENT_SOURCE_DIR}/Common.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp)
 
 # Set the dependencies for this library:
-target_include_directories(Tools PUBLIC
-                           "${INCLUDE_DIRS}")
+target_include_directories(Tools PUBLIC "${INCLUDE_DIRS}")
 
 # Add it to the list of includes & linked libraries
-list(APPEND Makma3D_LIBRARIES Tools)
+list(APPEND EXTRA_LIBS Tools)
 
 # Carry the list to the parent scope
-set(Makma3D_LIBRARIES "${Makma3D_LIBRARIES}" PARENT_SCOPE)
+set(EXTRA_LIBS "${EXTRA_LIBS}" PARENT_SCOPE)

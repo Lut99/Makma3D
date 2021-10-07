@@ -25,7 +25,7 @@
 #include <string>
 #include <stdexcept>
 
-#include "Common.hpp"
+#include "tools/Common.hpp"
 
 using namespace std;
 using namespace Makma3D;

@@ -206,4 +206,7 @@ namespace Makma3D::Tools::_array_intern {
     };
 }
 
+// Don't forget to include the .cpp
+#include "ArrayTools.cpp"
+
 #endif

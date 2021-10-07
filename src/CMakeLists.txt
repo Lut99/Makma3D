@@ -6,4 +6,4 @@ add_subdirectory(instance)
 add_subdirectory(tools)
 
 # Carry the list to the parent scope
-set(Makma3D_LIBRARIES "${Makma3D_LIBRARIES}" PARENT_SCOPE)
+set(EXTRA_LIBS "${EXTRA_LIBS}" PARENT_SCOPE)

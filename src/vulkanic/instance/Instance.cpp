@@ -14,8 +14,8 @@
 **/
 
 #include "tools/Logger.hpp"
-#include "../auxillary/ErrorCodes.hpp"
-#include "Instance.hpp"
+#include "vulkanic/auxillary/ErrorCodes.hpp"
+#include "vulkanic/instance/Instance.hpp"
 
 using namespace std;
 using namespace Makma3D;

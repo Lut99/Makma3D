@@ -14,7 +14,7 @@
 **/
 
 #include "tools/Logger.hpp"
-#include "Instance.hpp"
+#include "glfw/Instance.hpp"
 
 using namespace std;
 using namespace Makma3D;

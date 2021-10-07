@@ -16,6 +16,7 @@
 #ifndef MAKMA3D_HPP
 #define MAKMA3D_HPP
 
+#include "tools/Logger.hpp"
 #include "instance/Instance.hpp"
 
 #endif

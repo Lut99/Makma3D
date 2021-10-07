@@ -485,10 +485,10 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::hard_reserve(SIZE_T new_size) ->
     if (new_size == 0) {
         // Simply call reset
         this->reset();
-        return;
+        return *this;
     } else if (new_size == this->storage.size) {
         // Do nothing
-        return;
+        return *this;
     }
 
     // Start by allocating space for a new array
@@ -530,10 +530,10 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::reserve(SIZE_T min_size) -> std:
     if (min_size == 0) {
         // Simply call reset
         this->reset();
-        return;
+        return *this;
     } else if (min_size <= this->storage.capacity) {
         // Do nothing
-        return;
+        return *this;
     }
 
     // Start by allocating space for a new array

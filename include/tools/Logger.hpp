@@ -347,17 +347,12 @@ namespace Makma3D::Tools {
     /* Swap operator for the Logger class. */
     void swap(Logger& l1, Logger& l2);
 
-
-
-    /* Instance of the logger that is globally available. */
-    extern Logger logger;
-
 }
 
 // Pull the logger & Verbosity into the Makma3D namespace
 namespace Makma3D {
     /* Instance of the logger that is globally available. */
-    Tools::Logger& logger = Makma3D::Tools::logger;
+    extern Tools::Logger logger;
     /* The Verbosity enum, which is directly mapped to verbosity integers. */
     using Verbosity = Makma3D::Tools::Verbosity;
 }
