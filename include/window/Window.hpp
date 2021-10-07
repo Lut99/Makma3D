@@ -14,3 +14,20 @@
  *   of both rendering and user input.
 **/
 
+#ifndef WINDOW_WINDOW_HPP
+#define WINDOW_WINDOW_HPP
+
+#include "vulkanic/surface/Surface.hpp"
+
+namespace Makma3D::Window {
+    /* The Window class, which represents a single, renderable Window. Is technically a purely virtual class, as window APIs implement their own derivative. */
+    class Window {
+    public:
+
+    private:
+        
+
+    };
+}
+
+#endif
