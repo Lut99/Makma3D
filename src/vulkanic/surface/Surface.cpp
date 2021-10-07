@@ -53,7 +53,7 @@ Surface::~Surface() {
 void Vulkanic::swap(Surface& s1, Surface& s2) {
     #ifndef NDEBUG
     // Check if the instances are actually the same
-    if (s1.instance != s2.instance) { logger.fatalc(Surface::channel, "Cannot swap surfaces with different instances."); }
+    if (&s1.instance != &s2.instance) { logger.fatalc(Surface::channel, "Cannot swap surfaces with different instances."); }
     #endif
 
     // Swap all fields

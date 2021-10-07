@@ -19,15 +19,44 @@
 
 #include "vulkanic/surface/Surface.hpp"
 
-namespace Makma3D::Window {
+namespace Makma3D {
     /* The Window class, which represents a single, renderable Window. Is technically a purely virtual class, as window APIs implement their own derivative. */
     class Window {
     public:
+        /* Channel name for the Window class. */
+        static constexpr const char* channel = "Window";
 
-    private:
+    protected:
+        /* The Surface object used to create a Swapchain with. */
+        Vulkanic::Surface surface;
+        /* The Swapchain object that we wrap. */
+
+
+        /* Protected constructor for the Window class, which takes a GPU and a VkSurfaceKHR to initialize its surface and then its swapchain with. */
+        Window(/* TBD */ const Vulkanic::Surface& surface);
+
+    public:
+        /* Copy constructor for the Window class, which is deleted. */
+        Window(const Window& other) = delete;
+        /* Move constructor for the Window class. */
+        Window(Window&& other);
+        /* Destructor for the Window class. */
+        ~Window();
+
         
 
+        /* Copy assignment operator for the Window class, which is deleted. */
+        Window& operator=(const Window& other) = delete;
+        /* Move assignment operator for the Window class. */
+        inline Window& operator=(Window&& other) { if (this != &other) { swap(*this, other); } return *this; }
+        /* Swap operator for the Window class. */
+        friend void swap(Window& w1, Window& w2);
+
     };
+
+    /* Swap operator for the Window class. */
+    void swap(Window& w1, Window& w2);
+
 }
 
 #endif
