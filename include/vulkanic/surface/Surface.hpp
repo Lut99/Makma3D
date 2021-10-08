@@ -31,10 +31,12 @@ namespace Makma3D::Vulkanic {
     private:
         /* The VkSurfaceKHR object that we wrap. */
         VkSurfaceKHR vk_surface;
+        /* The size (in pixels) of the surface. */
+        VkExtent2D _extent;
     
     public:
-        /* Constructor for the Surface class, which takes an instance with which the surface is create and said surface it's supposed to wrap. The Surface will be automatically destroyed when the class is. */
-        Surface(const Vulkanic::Instance& instance, const VkSurfaceKHR& vk_surface);
+        /* Constructor for the Surface class, which takes an instance with which the surface is create, said surface it's supposed to wrap and the size (in pixels) of the surface's framebuffer. The Surface will be automatically destroyed when the class is. */
+        Surface(const Vulkanic::Instance& instance, const VkSurfaceKHR& vk_surface, const VkExtent2D& extent);
         /* Copy constructor for the Surface class, which is deleted as a window only has one surface at a time. */
         Surface(const Surface& other) = delete;
         /* Move constructor for the Surface class. */
@@ -42,6 +44,11 @@ namespace Makma3D::Vulkanic {
         /* Destructor for the Surface class. */
         ~Surface();
 
+        /* "Re-creates" the Surface by destroying the internal one and replacing it with the given VkSurfaceKHR. The extent is the new size of the surface. */
+        void recreate(const VkSurfaceKHR& vk_surface, const VkExtent2D& extent);
+
+        /* Returns the size (in pixels) of framebuffers rendering to this surface. */
+        inline const VkExtent2D& extent() const { return this->_extent; }
         /* Expliticly returns the internal VkSurfaceKHR object. */
         inline const VkSurfaceKHR& vk() const { return this->vk_surface; }
         /* Implicitly returns the internal VkSurfaceKHR object. */

@@ -23,6 +23,13 @@ using namespace Makma3D;
 using namespace Makma3D::Vulkanic;
 
 
+/***** HELPER FUNCTIONS *****/
+
+
+
+
+
+
 /***** GPU CLASS *****/
 /* Constructor for the GPU class, which takes a Vulkan Instance to create the GPU with, a HardwareGPU to wrap around and flags that determine which GPU features are enabled. */
 GPU::GPU(const Vulkanic::Instance& instance, const Vulkanic::HardwareGPU& physical_device, GPUFeatureFlags feature_flags) :
@@ -30,7 +37,9 @@ GPU::GPU(const Vulkanic::Instance& instance, const Vulkanic::HardwareGPU& physic
     physical_device(physical_device),
     feature_flags(feature_flags)
 {
-    
+    // First, collect the list of queue infos (one per queue)
+
+
 }
 
 /* Move constructor for the GPU class. */
