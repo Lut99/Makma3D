@@ -26,6 +26,7 @@
 #include "window/WindowMode.hpp"
 #include "window/Window.hpp"
 
+#include "Instance.hpp"
 #include "Monitor.hpp"
 
 namespace Makma3D::GLFW {
@@ -34,6 +35,9 @@ namespace Makma3D::GLFW {
     public:
         /* Channel name for the Window class. */
         static constexpr const char* channel = "GLFWWindow";
+
+        /* Reference to the GLFW Instance. */
+        const GLFW::Instance& instance;
 
     private:
         /* The GLFWWindow we wrap around. */
@@ -46,6 +50,8 @@ namespace Makma3D::GLFW {
          * @param monitor The monitor to check.
          */
         virtual bool _allowed_monitor(const Windowing::Monitor* monitor) const;
+        /* Returns the nearest monitor to the current Window position. Only called if the current mode is windowed. */
+        virtual const Windowing::Monitor* _find_nearest_monitor() const;
 
         /* Replace the backend monitor with the internal one. The internal WindowMode is already set properly at this point. */
         virtual void _replace_monitor();
@@ -68,13 +74,14 @@ namespace Makma3D::GLFW {
     
     public:
         /* Constructor for the Window class.
-         * @param instance The Vulkanic Instance that we use to create the Surface.
+         * @param glfw_instance The GLFW Instance that we use to find the nearest monitor to a windowed window.
+         * @param vulkanic_instance The Vulkanic Instance that we use to create the Surface.
          * @param monitor The Monitor where the Window will be spawned. Will be ignored if the WindowMode is set to windowed. Otherwise, it will be copied, and so the pointer can be safely deleted as soon as the constructor returns.
          * @param title String title for the Window.
          * @param extent The desired size (in pixels) of the Window. Will be ignored if the WindowMode is set to windowed fullscreen.
          * @param mode The WindowMode for the Window.
          */
-        Window(const Vulkanic::Instance& instance, const GLFW::Monitor* monitor, const std::string& title, const VkExtent2D& extent, Windowing::WindowMode mode);
+        Window(const GLFW::Instance& glfw_instance, const Vulkanic::Instance& vulkanic_instance, const GLFW::Monitor* monitor, const std::string& title, const VkExtent2D& extent, Windowing::WindowMode mode);
         /* Copy constructor for the Window class, which is deleted. */
         Window(const Window& other) = delete;
         /* Move constructor for the Window class. */

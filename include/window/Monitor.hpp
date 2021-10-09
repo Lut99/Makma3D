@@ -44,6 +44,9 @@ namespace Makma3D::Windowing {
         /* Virtual destructor for the Monitor class, which is trivial. */
         virtual ~Monitor() = default;
 
+        /* Returns the middle of the workarea of the monitor. */
+        virtual VkOffset2D get_center() const = 0;
+
         /* Returns the index of the Monitor. */
         inline uint32_t index() const { return this->_index; }
         /* Returns the name of the Monitor. */

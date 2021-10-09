@@ -57,6 +57,8 @@ namespace Makma3D::Windowing {
          * @param monitor The monitor to check.
          */
         virtual bool _allowed_monitor(const Windowing::Monitor* monitor) const = 0;
+        /* Returns the nearest monitor to the current Window position. Only called if the current mode is windowed. */
+        virtual const Windowing::Monitor* _find_nearest_monitor() const = 0;
         
         /* Replace the backend monitor with the internal one. The internal WindowMode is already set properly at this point. */
         virtual void _replace_monitor() = 0;

@@ -14,6 +14,8 @@
  *   build a swapchain around it.
 **/
 
+#include <limits>
+
 #include "tools/Logger.hpp"
 #include "vulkanic/auxillary/ErrorCodes.hpp"
 
@@ -26,8 +28,9 @@ using namespace Makma3D::GLFW;
 
 /***** WINDOW CLASS *****/
 /* Constructor for the Window class. */
-Window::Window(const Vulkanic::Instance& instance, const GLFW::Monitor* monitor, const std::string& title, const VkExtent2D& extent, Windowing::WindowMode mode) :
-    Windowing::Window(monitor, title, extent, mode)
+Window::Window(const GLFW::Instance& glfw_instance, const Vulkanic::Instance& vulkanic_instance, const GLFW::Monitor* monitor, const std::string& title, const VkExtent2D& extent, Windowing::WindowMode mode) :
+    Windowing::Window(monitor, title, extent, mode),
+    instance(glfw_instance)
 {
     // Set whether this Window is resizeable or not
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -75,7 +78,7 @@ Window::Window(const Vulkanic::Instance& instance, const GLFW::Monitor* monitor,
     // With the Window created, create the Vulkan surface
     VkResult vk_result;
     VkSurfaceKHR vk_surface;
-    if((vk_result = glfwCreateWindowSurface(instance, this->glfw_window, nullptr, &vk_surface)) != VK_SUCCESS) {
+    if((vk_result = glfwCreateWindowSurface(vulkanic_instance, this->glfw_window, nullptr, &vk_surface)) != VK_SUCCESS) {
         logger.fatalc(Window::channel, "Could not create window surface: ", Vulkanic::vk_error_map[vk_result]);
     }
 
@@ -84,7 +87,7 @@ Window::Window(const Vulkanic::Instance& instance, const GLFW::Monitor* monitor,
     glfwGetFramebufferSize(this->glfw_window, &fw, &fh);
 
     // With that, create the Surface object and set it internally
-    this->_surface = new Vulkanic::Surface(instance, vk_surface, { static_cast<uint32_t>(fw), static_cast<uint32_t>(fh) });
+    this->_surface = new Vulkanic::Surface(vulkanic_instance, vk_surface, { static_cast<uint32_t>(fw), static_cast<uint32_t>(fh) });
 
     // Do a success print
     if (logger.get_verbosity() >= Verbosity::debug) {
@@ -114,6 +117,8 @@ Window::Window(const Vulkanic::Instance& instance, const GLFW::Monitor* monitor,
 /* Move constructor for the Window class. */
 Window::Window(Window&& other) :
     Windowing::Window(std::move(other)),
+    instance(other.instance),
+
     glfw_window(other.glfw_window)
 {
     other.glfw_window = nullptr;
@@ -136,6 +141,40 @@ const char* Window::_api_name() const {
 /* Checks if the given monitor makes sense for this API backend. */
 bool Window::_allowed_monitor(const Windowing::Monitor* monitor) const {
     return dynamic_cast<const GLFW::Monitor*>(monitor) != nullptr;
+}
+
+/* Returns the nearest monitor to the current Window position. Only called if the current mode is windowed. */
+const Windowing::Monitor* Window::_find_nearest_monitor() const {
+    // Get the window's position and size in the virtual screen
+    int window_x, window_y, window_w, window_h;
+    glfwGetWindowPos(this->glfw_window, &window_x, &window_y);
+    glfwGetWindowSize(this->glfw_window, &window_w, &window_h);
+
+    // Loop through the available monitors
+    int best_area = 0;
+    uint32_t best_monitor = std::numeric_limits<uint32_t>::max();
+    const Tools::Array<GLFW::Monitor> monitors = this->instance.get_monitors();
+    for (uint32_t i = 0; i < monitors.size(); i++) {
+        // Get the monitor's position and size in the virtual screen
+        int monitor_x, monitor_y, monitor_w, monitor_h;
+        glfwGetMonitorPos(monitors[i], &monitor_x, &monitor_y);
+        monitor_w = monitors[i].current_video_mode()->width;
+        monitor_h = monitors[i].current_video_mode()->height;
+
+        // Compare the two by computing the overlapping area
+        int area = max(0, min(window_x + window_w, monitor_x + monitor_w) - max(window_x, monitor_x)) *
+                   max(0, min(window_y + window_h, monitor_y + monitor_h) - max(window_y, monitor_y));
+        if (area > best_area) {
+            best_area = area;
+            best_monitor = i;
+        }
+    }
+
+    // If the best monitor is not found, then throw a warning but do return
+    if (best_monitor == std::numeric_limits<uint32_t>::max()) { logger.warningc(Window::channel, "No best Monitor found for windowed window."); }
+
+    // Done
+    return (const Windowing::Monitor*) &monitors[best_monitor];
 }
 
 
@@ -255,63 +294,12 @@ void Window::_reconstruct_surface() {
 
 
 
-/* Resizes the Window to a new extent. */
-void Window::set_extent(const VkExtent2D& new_extent) {
-    // Set the window size
-    this->_extent = new_extent;
-    glfwSetWindowSize(this->glfw_window, static_cast<int>(this->_extent.width), static_cast<int>(this->_extent.height));
-
-    // Re-create the window surface
-    VkResult vk_result;
-    VkSurfaceKHR vk_surface;
-    if((vk_result = glfwCreateWindowSurface(this->_surface->instance, this->glfw_window, nullptr, &vk_surface)) != VK_SUCCESS) {
-        logger.fatalc(Window::channel, "Could not re-create window surface on resize: ", Vulkanic::vk_error_map[vk_result]);
-    }
-
-    // Get its framebuffer size
-    int fw, fh;
-    glfwGetFramebufferSize(this->glfw_window, &fw, &fh);
-
-    // Re-create the internal Surface too
-    this->_surface->recreate(vk_surface, { static_cast<uint32_t>(fw), static_cast<uint32_t>(fh) });
-}
-
-/* Changes the Window mode to the given one. Since the window will most certainly change size, you should give that as well (although it will be ignored if switching to windowed fullscreen). The monitor, in turn, is ignored when switching to windowed. */
-void Window::set_mode(Windowing::WindowMode new_mode, const VkExtent2D new_extent, const Windowing::Monitor* new_monitor) {
-    // Set the new_extent as our own new one
-    this->_extent = new_extent;
-
-    // Switch depending on where we come from
-    switch(this->_mode) {
-    case Windowing::WindowMode::windowed:
-        if (new_mode == Windowing::WindowMode::windowed) { break; }
-
-        // If we're going to windowed fullscreen, set the videmode hints first
-        if (new_mode == Windowing::WindowMode::windowed_fullscreen) {
-            // Overwrite the internal size with the one given by the video mode
-            this->_extent.width  = static_cast<uint32_t>(this->glfw_video_mode->width);
-            this->_extent.height = static_cast<uint32_t>(this->glfw_video_mode->height);
-
-            // Set the video mode for this window first
-            glfwWindowHint(GLFW_RED_BITS, this->glfw_video_mode->redBits);
-            glfwWindowHint(GLFW_GREEN_BITS, this->glfw_video_mode->greenBits);
-            glfwWindowHint(GLFW_BLUE_BITS, this->glfw_video_mode->blueBits);
-            glfwWindowHint(GLFW_REFRESH_RATE, this->glfw_video_mode->refreshRate);
-        }
-
-        // Set the Window's size
-        glfwSetWindowSize(this->glfw_window, static_cast<int>(this->_extent.width), static_cast<int>(this->_extent.height));
-
-        // Now set the monitor to apply the change
-        
-
-    }
-}
-
-
-
 /* Swap operator for the Window class. */
 void GLFW::swap(Window& w1, Window& w2) {
+    #ifndef NDEBUG
+    if (&w1.instance != &w2.instance) { logger.fatalc(Window::channel, "Cannot swap windows with different instances."); }
+    #endif
+
     using std::swap;
 
     swap((Windowing::Window&) w1, (Windowing::Window&) w2);

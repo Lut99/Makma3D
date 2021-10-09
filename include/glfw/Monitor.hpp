@@ -37,6 +37,9 @@ namespace Makma3D::GLFW {
         /* Constructor for the Monitor class, which takes the GLFWmonitor it wraps and its index. */
         Monitor(GLFWmonitor* glfw_monitor, uint32_t index);
 
+        /* Returns the middle of the workarea of the monitor. */
+        virtual VkOffset2D get_center() const;
+
         /* Returns the current video mode of the monitor. */
         const GLFWvidmode* current_video_mode() const;
         /* Returns a pointer to the video mode of the monitor from before one of our applications was running on it. */

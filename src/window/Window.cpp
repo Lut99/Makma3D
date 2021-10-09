@@ -30,7 +30,12 @@ Window::Window(const Windowing::Monitor* monitor, const std::string& title, cons
     _title(title),
     _extent(extent),
     _mode(window_mode)
-{}
+{
+    // Make sure the monitor is valid
+    if (!this->_allowed_monitor(this->_monitor)) {
+        logger.fatalc(Window::channel, "Invalid monitor for ", this->_api_name(), " backend.");
+    }
+}
 
 /* Move constructor for the Window class. */
 Window::Window(Window&& other) :
@@ -111,15 +116,62 @@ void Window::set_extent(const VkExtent2D& new_extent) {
 /* Changes the Window mode to the given one. */
 void Window::set_mode(WindowMode new_mode, const VkExtent2D new_extent, const Windowing::Monitor* new_monitor) {
     // Check if the mode is different
-    if (this->_mode != new_mode) { return; }
+    if (this->_mode == new_mode) { return; }
 
-    // Resolve the monitor
-    
-
-    // Make sure the Monitor is valid for the backend
-    if (new_mode != WindowMode::windowed && !this->_allowed_monitor(new_monitor)) {
-        logger.fatalc(Window::channel, "Invalid monitor for ", this->_api_name(), " backend.");
+    // Try to resolve the monitor if needed
+    if (new_mode != WindowMode::windowed) {
+        // See if we need to resolve the monitor
+        if (new_monitor == nullptr) {
+            // We do; either grab the existing one or find the nearest
+            if (this->_mode == WindowMode::windowed) {
+                new_monitor = this->_find_nearest_monitor();
+            } else {
+                new_monitor = this->_monitor;
+            }
+        } else {
+            // Make sure the monitor is valid for the backend
+            if (!this->_allowed_monitor(new_monitor)) {
+                logger.fatalc(Window::channel, "Invalid monitor for ", this->_api_name(), " backend.");
+            }
+        }
     }
+
+    // Store the extent if needed
+    if (new_mode != WindowMode::windowed_fullscreen) {
+        this->_extent = new_extent;
+    }
+
+    // With the monitor resolved, transition to the new mode
+    if (new_mode == WindowMode::windowed) {
+        // Compute the middle of the monitor
+        VkOffset2D middle = this->_monitor->get_center();
+        middle.x += static_cast<int32_t>(this->_extent.width / 2);
+        middle.y += static_cast<int32_t>(this->_extent.height / 2);
+
+        // Convert the window to the center of this
+        this->_make_windowed(middle);
+
+        // Remove the internal monitor
+        this->_monitor = nullptr;
+    } else if (new_mode == WindowMode::fullscreen) {
+        // Set the new monitor
+        this->_monitor = new_monitor;
+
+        // Simply call the backend function
+        this->_make_fullscreen();
+    } else if (new_mode == WindowMode::windowed_fullscreen) {
+        // Set the new monitor
+        this->_monitor = new_monitor;
+
+        // Simply call the backend function
+        this->_make_windowed_fullscreen();
+    } else {
+        logger.fatalc(Window::channel, "Unsupported WindowMode '", window_mode_names[(int) new_mode], "'.");
+    }
+
+    // With the mode changed, reconstruct the surface and the swapchain
+    this->_reconstruct_surface();
+    /* TBD */
 }
 
 

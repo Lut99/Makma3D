@@ -49,6 +49,21 @@ Monitor::Monitor(GLFWmonitor* glfw_monitor, uint32_t index) :
 
 
 
+/* Returns the middle of the workarea of the monitor. */
+VkOffset2D Monitor::get_center() const {
+    // Get the monitor's workarea
+    int x, y, w, h;
+    glfwGetMonitorWorkarea(this->glfw_monitor, &x, &y, &w, &h);
+
+    // Return the center
+    return {
+        static_cast<int32_t>(x + w / 2),
+        static_cast<int32_t>(y + h / 2)
+    };
+}
+
+
+
 /* Returns the current video mode of the monitor. */
 const GLFWvidmode* Monitor::current_video_mode() const {
     const GLFWvidmode* result = glfwGetVideoMode(this->glfw_monitor);
