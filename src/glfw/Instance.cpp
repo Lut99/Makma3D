@@ -41,10 +41,32 @@ Instance::Instance() {
 
     // Assign the debug callback
     glfwSetErrorCallback(glfw_error_callback);
+
+    // Get the list of attached monitors
+    int n_monitors;
+    GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor();
+    if (primary_monitor == NULL) { logger.fatalc(Instance::channel, "Could not get primary monitor."); }
+    GLFWmonitor** monitors = glfwGetMonitors(&n_monitors);
+    if (monitors == NULL) { logger.fatalc(Instance::channel, "Could not get list of monitors."); }
+
+    // Go through it to create enough Monitor instances
+    this->monitors.reserve(static_cast<uint32_t>(n_monitors));
+    for (uint32_t i = 0; i < static_cast<uint32_t>(n_monitors); i++) {
+        // Create the instance
+        this->monitors.push_back(GLFW::Monitor(monitors[i], i));
+
+        // If this happens to be the primary monitor, set it as such
+        if (monitors[i] == primary_monitor) {
+            this->primary_monitor = &this->monitors[i];
+        }
+    }
 }
 
 /* Move constructor for the Instance class. */
-Instance::Instance(Instance&& other) {}
+Instance::Instance(Instance&& other) :
+    primary_monitor(other.primary_monitor),
+    monitors(std::move(other.monitors))
+{}
 
 /* Destructor for the Instance class. */
 Instance::~Instance() {
@@ -54,4 +76,9 @@ Instance::~Instance() {
 
 
 /* Swap operator for the Instance class. */
-void GLFW::swap(Instance& i1, Instance& i2) {}
+void GLFW::swap(Instance& i1, Instance& i2) {
+    using std::swap;
+
+    swap(i1.primary_monitor, i2.primary_monitor);
+    swap(i1.monitors, i2.monitors);
+}

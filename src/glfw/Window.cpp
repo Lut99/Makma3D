@@ -25,19 +25,12 @@ using namespace Makma3D::GLFW;
 
 
 /***** WINDOW CLASS *****/
-/* Constructor for the Window class, which takes a Vulkananic instance to initialize the Surface with, the Window's title, its size as a VkExtend2D and its fullscreen mode. If the window mode if 'windowed fullscreen', ignores the given size and uses the monitor's size instead. If the window mode isn't 'windowed', then a Monitor must be provided to spawn the Window on. Copies the monitor if given. */
-Window::Window(const Vulkanic::Instance& instance, const std::string& title, const VkExtent2D& extent, Windowing::WindowMode mode, const GLFW::Monitor* monitor) :
-    Windowing::Window(title, extent, mode, (const Windowing::Monitor*) new GLFW::Monitor(*monitor))
+/* Constructor for the Window class. */
+Window::Window(const Vulkanic::Instance& instance, const GLFW::Monitor* monitor, const std::string& title, const VkExtent2D& extent, Windowing::WindowMode mode) :
+    Windowing::Window(monitor, title, extent, mode)
 {
     // Set whether this Window is resizeable or not
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-    // Store the current video mode first to be able to later switch to windowed mode
-    if (this->_monitor != nullptr) {
-        this->glfw_video_mode = glfwGetVideoMode(((const GLFW::Monitor*) this->_monitor)->glfw());
-    } else {
-        this->glfw_video_mode = nullptr;
-    }
 
     // Create the window differently based on the window mode
     switch(this->_mode) {
@@ -59,17 +52,18 @@ Window::Window(const Vulkanic::Instance& instance, const std::string& title, con
         if (this->_monitor == nullptr) { logger.fatalc(Window::channel, "Missing monitor for Windowed Fullscreen window mode."); }
 
         // Overwrite the internal size with the one given by the video mode
-        this->_extent.width  = static_cast<uint32_t>(this->glfw_video_mode->width);
-        this->_extent.height = static_cast<uint32_t>(this->glfw_video_mode->height);
+        const GLFWvidmode* video_mode = ((const GLFW::Monitor*) this->_monitor)->idle_video_mode();
+        this->_extent.width  = static_cast<uint32_t>(video_mode->width);
+        this->_extent.height = static_cast<uint32_t>(video_mode->height);
 
         // Set the video mode for this window first
-        glfwWindowHint(GLFW_RED_BITS, this->glfw_video_mode->redBits);
-        glfwWindowHint(GLFW_GREEN_BITS, this->glfw_video_mode->greenBits);
-        glfwWindowHint(GLFW_BLUE_BITS, this->glfw_video_mode->blueBits);
-        glfwWindowHint(GLFW_REFRESH_RATE, this->glfw_video_mode->refreshRate);
+        glfwWindowHint(GLFW_RED_BITS, video_mode->redBits);
+        glfwWindowHint(GLFW_GREEN_BITS, video_mode->greenBits);
+        glfwWindowHint(GLFW_BLUE_BITS, video_mode->blueBits);
+        glfwWindowHint(GLFW_REFRESH_RATE, video_mode->refreshRate);
 
         // Now create the window
-        this->glfw_window = glfwCreateWindow(this->glfw_video_mode->width, this->glfw_video_mode->height, this->_title.c_str(), monitor->glfw(), NULL);
+        this->glfw_window = glfwCreateWindow(video_mode->width, video_mode->height, this->_title.c_str(), monitor->glfw(), NULL);
         break;
     }
 
@@ -120,8 +114,7 @@ Window::Window(const Vulkanic::Instance& instance, const std::string& title, con
 /* Move constructor for the Window class. */
 Window::Window(Window&& other) :
     Windowing::Window(std::move(other)),
-    glfw_window(other.glfw_window),
-    glfw_video_mode(other.glfw_video_mode)
+    glfw_window(other.glfw_window)
 {
     other.glfw_window = nullptr;
 }
@@ -135,27 +128,132 @@ Window::~Window() {
 
 
 
-/* Sets the monitor of the Window. Only relevant when the Window is not in windowed mode. */
-void Window::set_monitor(const Windowing::Monitor* new_monitor) {
-    // Make sure the Window is in the correct format
-    if (dynamic_cast<const GLFW::Monitor*>(new_monitor) == nullptr) {
-        logger.fatalc(Window::channel, "GLFW Windows only accept GLFW Monitors.");
+/* Returns the backend API's name. */
+const char* Window::_api_name() const {
+    return "GLFW";
+}
+
+/* Checks if the given monitor makes sense for this API backend. */
+bool Window::_allowed_monitor(const Windowing::Monitor* monitor) const {
+    return dynamic_cast<const GLFW::Monitor*>(monitor) != nullptr;
+}
+
+
+
+/* Replace the backend monitor with the internal one. The new size (if relevant) and the new window mode are already set internally at this point. */
+void Window::_replace_monitor() {
+    const GLFW::Monitor* glfw_monitor = (const GLFW::Monitor*) this->_monitor;
+
+    // If we're in windowed fullscreen, set a specific size and refresh rate
+    int refresh_rate = GLFW_DONT_CARE;
+    if (this->_mode == Windowing::WindowMode::windowed_fullscreen) {
+        this->_extent.width = static_cast<uint32_t>(glfw_monitor->idle_video_mode()->width);
+        this->_extent.height = static_cast<uint32_t>(glfw_monitor->idle_video_mode()->height);
+        refresh_rate = glfw_monitor->idle_video_mode()->refreshRate;
     }
 
-    // Otherwise, skip if the window mode is windowed
-    if (this->_mode == Windowing::WindowMode::windowed) { return; }
+    // Push the monitor change to the GLFW backend
+    glfwSetWindowMonitor(
+        // The Window and its new Monitor
+        this->glfw_window, glfw_monitor->glfw(),
+        // The position of the Window (ignored when setting a new monitor)
+        GLFW_DONT_CARE, GLFW_DONT_CARE,
+        // The new size of the Window (we just use the old one)
+        static_cast<int>(this->_extent.width), static_cast<int>(this->_extent.height),
+        // The refresh rate
+        refresh_rate
+    );
 
-    // But if we passed the checks, update by copying
-    const GLFW::Monitor* copy = new GLFW::Monitor(*((const GLFW::Monitor*) new_monitor));
-    delete this->_monitor;
-    this->_monitor = (const Windowing::Monitor*) copy;
+    // Done
 }
 
-/* Sets the title of the Window. */
-void Window::set_title(const std::string& new_title) {
-    this->_title = new_title;
+/* Replace the title of the backend monitor with the internal one. */
+void Window::_replace_title() {
+    // Simply push
     glfwSetWindowTitle(this->glfw_window, this->_title.c_str());
 }
+
+/* Resize the internal Window to the internal extent. */
+void Window::_resize_window() {
+    // Simply call the GLFW function for this
+    glfwSetWindowSize(this->glfw_window, static_cast<int>(this->_extent.width), static_cast<int>(this->_extent.height));
+}
+
+
+
+/* Sets the Window to the windowed mode. Guaranteed to not be called in the case the Window is already windowed. The new window size is already set internally. The internal Monitor is not yet destroyed at this point, but will be after this call returns. */
+void Window::_make_windowed(const VkOffset2D& new_pos) {
+    // Simply set the monitor with the desired properties
+    glfwSetWindowMonitor(
+        // The Window and its new Monitor (no monitor, so go to windowed)
+        this->glfw_window, NULL,
+        // The position of the Window
+        static_cast<int>(new_pos.x), static_cast<int>(new_pos.y),
+        // The new size of the Window (we just use the old one)
+        static_cast<int>(this->_extent.width), static_cast<int>(this->_extent.height),
+        // The refresh rate (which we can ignore here)
+        GLFW_DONT_CARE
+    );
+}
+
+/* Sets the Window to the fullscreen mode. Guaranteed to not be called in case the Window is already in fullscreen. The new window size is already set internally, just like the new Monitor. */
+void Window::_make_fullscreen() {
+    const GLFW::Monitor* glfw_monitor = (const GLFW::Monitor*) this->_monitor;
+
+    // Simply set the monitor with the desired properties
+    glfwSetWindowMonitor(
+        // The Window and its new Monitor
+        this->glfw_window, glfw_monitor->glfw(),
+        // The position of the Window (which we ignore)
+        GLFW_DONT_CARE, GLFW_DONT_CARE,
+        // The new size of the Window (we just use the old one)
+        static_cast<int>(this->_extent.width), static_cast<int>(this->_extent.height),
+        // The refresh rate (which we can ignore here too)
+        GLFW_DONT_CARE
+    );
+}
+
+/* Sets the Window to the windowed fullscreen mode. Guaranteed to not be called in case the Window is already in fullscreen. The new monitor is already set internally, and the rest of the properties we copy from that. */
+void Window::_make_windowed_fullscreen() {
+    const GLFW::Monitor* glfw_monitor = (const GLFW::Monitor*) this->_monitor;
+
+    // Replace the size internally
+    this->_extent.width = static_cast<uint32_t>(glfw_monitor->idle_video_mode()->width);
+    this->_extent.height = static_cast<uint32_t>(glfw_monitor->idle_video_mode()->height);
+
+    // Simply set the monitor with the desired properties
+    glfwSetWindowMonitor(
+        // The Window and its new Monitor
+        this->glfw_window, glfw_monitor->glfw(),
+        // The position of the Window (which we ignore)
+        GLFW_DONT_CARE, GLFW_DONT_CARE,
+        // The new size of the Window (take the ones copies from the monitor)
+        static_cast<int>(this->_extent.width), static_cast<int>(this->_extent.height),
+        // The refresh rate, which we take from the monitor
+        glfw_monitor->idle_video_mode()->refreshRate
+    );
+}
+
+
+
+/* Reconstruct the internal Surface from the internal Window. */
+void Window::_reconstruct_surface() {
+    // Re-create the VkSurfaceKHR first
+    VkResult vk_result;
+    VkSurfaceKHR vk_surface;
+    if((vk_result = glfwCreateWindowSurface(this->_surface->instance, this->glfw_window, nullptr, &vk_surface)) != VK_SUCCESS) {
+        logger.fatalc(Window::channel, "Could not re-create window surface: ", Vulkanic::vk_error_map[vk_result]);
+    }
+
+    // Get its framebuffer size
+    int fw, fh;
+    glfwGetFramebufferSize(this->glfw_window, &fw, &fh);
+
+    // Re-create the internal Surface too
+    this->_surface->recreate(vk_surface, { static_cast<uint32_t>(fw), static_cast<uint32_t>(fh) });
+}
+
+
 
 /* Resizes the Window to a new extent. */
 void Window::set_extent(const VkExtent2D& new_extent) {
@@ -218,5 +316,4 @@ void GLFW::swap(Window& w1, Window& w2) {
 
     swap((Windowing::Window&) w1, (Windowing::Window&) w2);
     swap(w1.glfw_window, w2.glfw_window);
-    swap(w1.glfw_video_mode, w2.glfw_video_mode);
 }

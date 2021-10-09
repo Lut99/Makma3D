@@ -13,6 +13,7 @@
  *   and lists its properties.
 **/
 
+#include "tools/Logger.hpp"
 #include "glfw/Monitor.hpp"
 
 using namespace std;
@@ -27,16 +28,30 @@ Monitor::Monitor(GLFWmonitor* glfw_monitor, uint32_t index) :
     glfw_monitor(glfw_monitor)
 {
     // Extract the properties from the struct
-    this->_name = glfwGetMonitorName(this->glfw_monitor);
+    const char* name = glfwGetMonitorName(this->glfw_monitor);
+    if (name == NULL) { logger.fatalc(Monitor::channel, "Could not get monitor name."); }
+    this->_name = name;
     this->_index = index;
 
     // Get the scale of the monitor
     glfwGetMonitorContentScale(this->glfw_monitor, &this->_xscale, &this->_yscale);
     
     // Get the video mode for the resolution
-    const GLFWvidmode* video_mode = glfwGetVideoMode(this->glfw_monitor);
-    this->_resolution.width  = static_cast<uint32_t>(video_mode->width / this->_xscale);
-    this->_resolution.height = static_cast<uint32_t>(video_mode->height / this->_yscale);
-    this->_scaled_resolution.width  = static_cast<uint32_t>(video_mode->width);
-    this->_scaled_resolution.height = static_cast<uint32_t>(video_mode->height);
+    this->glfw_video_mode = glfwGetVideoMode(this->glfw_monitor);
+    if (this->glfw_video_mode == NULL) { logger.fatalc(Monitor::channel, "Could not get idle video mode."); }
+
+    // Compute the resolution(s)
+    this->_resolution.width  = static_cast<uint32_t>(this->glfw_video_mode->width / this->_xscale);
+    this->_resolution.height = static_cast<uint32_t>(this->glfw_video_mode->height / this->_yscale);
+    this->_scaled_resolution.width  = static_cast<uint32_t>(this->glfw_video_mode->width);
+    this->_scaled_resolution.height = static_cast<uint32_t>(this->glfw_video_mode->height);
+}
+
+
+
+/* Returns the current video mode of the monitor. */
+const GLFWvidmode* Monitor::current_video_mode() const {
+    const GLFWvidmode* result = glfwGetVideoMode(this->glfw_monitor);
+    if (result == NULL) { logger.fatalc(Monitor::channel, "Could not get current video mode."); }
+    return result;
 }

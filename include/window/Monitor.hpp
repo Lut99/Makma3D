@@ -57,6 +57,9 @@ namespace Makma3D::Windowing {
         /* Returns the scaled resolution of the Monitor as a VkExtent2D. */
         inline const VkExtent2D& scaled_resolution() const { return this->_scaled_resolution; }
 
+        /* Allows the monitor to be copied polymorphically. */
+        virtual Monitor* copy() const = 0;
+
     };
 }
 

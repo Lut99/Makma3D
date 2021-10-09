@@ -31,9 +31,9 @@ namespace Makma3D {
 
     private:
         /* The GLFW instance that we need. */
-        GLFW::Instance glfw_instance;
+        GLFW::Instance _glfw_instance;
         /* The Vulkan instance that we need. */
-        Vulkanic::Instance vulkan_instance;
+        Vulkanic::Instance _vulkanic_instance;
 
     public:
         /* Constructor for the Instance class, which takes the application name, the application version (created with VK_MAKE_VERSION), a list of Vulkan extensions to enable and a list of Vulkan layers to enable. If NDEBUG isn't defined, the Vulkan debug extension & layers are automatically enabled. */
@@ -45,10 +45,15 @@ namespace Makma3D {
         /* Destructor for the Instance class. */
         ~Instance();
 
+        /* Returns the GLFW instance in the Instance. */
+        inline const GLFW::Instance& glfw_instance() const { return this->_glfw_instance; }
+        /* Returns the Vulkanic instance in the Instance. */
+        inline const Vulkanic::Instance& vulkanic_instance() const { return this->_vulkanic_instance; }
+
         /* Explicitly returns the VkInstance class of the internal Vulkan Instance. */
-        inline const VkInstance& vk() const { return this->vulkan_instance.vk(); }
+        inline const VkInstance& vk() const { return this->_vulkanic_instance.vk(); }
         /* Implicitly returns the VkInstance class of the internal Vulkan Instance. */
-        inline operator const VkInstance&() const { return this->vulkan_instance.vk(); }
+        inline operator const VkInstance&() const { return this->_vulkanic_instance.vk(); }
 
         /* Copy assignment operator for the Instance class, which is deleted. */
         Instance& operator=(const Instance& other) = delete;

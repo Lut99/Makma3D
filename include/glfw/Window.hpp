@@ -38,8 +38,33 @@ namespace Makma3D::GLFW {
     private:
         /* The GLFWWindow we wrap around. */
         GLFWwindow* glfw_window;
-        /* The video mode from the screen from before the window was created. */
-        const GLFWvidmode* glfw_video_mode;
+
+
+        /* Returns the backend API's name. */
+        virtual const char* _api_name() const;
+        /* Checks if the given monitor makes sense for this API backend.
+         * @param monitor The monitor to check.
+         */
+        virtual bool _allowed_monitor(const Windowing::Monitor* monitor) const;
+
+        /* Replace the backend monitor with the internal one. The internal WindowMode is already set properly at this point. */
+        virtual void _replace_monitor();
+        /* Replace the title of the backend monitor with the internal one. */
+        virtual void _replace_title();
+        /* Resize the internal Window to the internal extent. */
+        virtual void _resize_window();
+
+        /* Sets the Window to the windowed mode. Guaranteed to not be called in the case the Window is already windowed. The new window size is already set internally. The internal Monitor is not yet destroyed at this point, but will be after this call returns.
+         * @param new_pos The new position of the Window on the virtual screen as a VkOffset2D.
+         */
+        virtual void _make_windowed(const VkOffset2D& new_pos);
+        /* Sets the Window to the fullscreen mode. Guaranteed to not be called in case the Window is already in fullscreen. The new window size is already set internally, just like the new Monitor. */
+        virtual void _make_fullscreen();
+        /* Sets the Window to the windowed fullscreen mode. Guaranteed to not be called in case the Window is already in fullscreen. The new monitor is already set internally, and the rest of the properties we copy from that. */
+        virtual void _make_windowed_fullscreen();
+
+        /* Reconstruct the internal Surface from the internal Window. */
+        virtual void _reconstruct_surface();
     
     public:
         /* Constructor for the Window class.
@@ -56,21 +81,6 @@ namespace Makma3D::GLFW {
         Window(Window&& other);
         /* Destructor for the Window class. */
         ~Window();
-
-        /* Sets the title of the Window.
-         * @param new_title The new title of the Window.
-         */
-        virtual void set_title(const std::string& new_title);
-        /* Resizes the window to the given size. If the current mode is set to windowed fullscreen, then calling this function does nothing as the size is always that of the desktop resolution.
-         * @param new_extent The new size of the Window, in pixels.
-         */
-        virtual void resize(const VkExtent2D& new_extent);
-        /* Resizes the window by moving it to another monitor. Is pretty useless to call if the current mode is set to windowed, or if the given monitor is the same as the old one.
-         * @param new_monitor The new Monitor to move the Window to.
-         */
-        virtual void resize(const Windowing::Monitor* new_monitor);
-        /* Changes the Window mode to the given one. Since the window will most certainly change size, you should give that as well (although it will be ignored if switching to windowed fullscreen). The monitor, in turn, is ignored when switching to windowed. */
-        virtual void set_mode(Windowing::WindowMode new_mode, const VkExtent2D new_extent, const Windowing::Monitor* new_monitor);
 
         /* Copy assignment operator for the Window class, which is deleted. */
         Window& operator=(const Window& other) = delete;
