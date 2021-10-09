@@ -45,6 +45,9 @@ namespace Makma3D::GLFW {
         /* Destructor for the Instance class. */
         ~Instance();
 
+        /* Returns a list of Vulkan extensions that should be enabled when using GLFW. */
+        static Tools::Array<const char*> get_vulkan_extensions();
+
         /* Returns the primary monitor. */
         inline const GLFW::Monitor& get_primary_monitor() const { return *this->primary_monitor; }
         /* Returns the list of monitors. */

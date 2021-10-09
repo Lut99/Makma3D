@@ -32,6 +32,11 @@ Window::Window(const GLFW::Instance& glfw_instance, const Vulkanic::Instance& vu
     Windowing::Window(monitor, title, extent, mode),
     instance(glfw_instance)
 {
+    // Make sure the monitor is valid
+    if (this->_monitor != nullptr && !this->_allowed_monitor(this->_monitor)) {
+        logger.fatalc(Window::channel, "Invalid monitor for ", this->_api_name(), " backend.");
+    }
+
     // Set whether this Window is resizeable or not
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
@@ -93,15 +98,15 @@ Window::Window(const GLFW::Instance& glfw_instance, const Vulkanic::Instance& vu
     if (logger.get_verbosity() >= Verbosity::debug) {
         switch(this->_mode) {
         case Windowing::WindowMode::windowed:
-            logger.logc(Verbosity::debug, "Initialized Window '", this->_title, "' with size ", this->_extent.width, 'x', this->_extent.height, " in Windowed mode.");
+            logger.logc(Verbosity::important, Window::channel, "Initialized Window '", this->_title, "' with size ", this->_extent.width, 'x', this->_extent.height, " in Windowed mode.");
             break;
 
         case Windowing::WindowMode::fullscreen:
-            logger.logc(Verbosity::debug, "Initialized Window '", this->_title, "' with size ", this->_extent.width, 'x', this->_extent.height, " in Fullscreen mode on monitor ", this->_monitor->index(), '.');
+            logger.logc(Verbosity::important, Window::channel, "Initialized Window '", this->_title, "' with size ", this->_extent.width, 'x', this->_extent.height, " in Fullscreen mode on monitor ", this->_monitor->index(), '.');
             break;
 
         case Windowing::WindowMode::windowed_fullscreen:
-            logger.logc(Verbosity::debug, "Initialized Window '", this->_title, "' with size ", this->_extent.width, 'x', this->_extent.height, " in WindowedFullscreen mode on monitor ", this->_monitor->index(), '.');
+            logger.logc(Verbosity::important, Window::channel, "Initialized Window '", this->_title, "' with size ", this->_extent.width, 'x', this->_extent.height, " in WindowedFullscreen mode on monitor ", this->_monitor->index(), '.');
             break;
 
         default:
@@ -204,18 +209,21 @@ void Window::_replace_monitor() {
     );
 
     // Done
+    logger.logc(Verbosity::important, Window::channel, "Moved window to monitor ", glfw_monitor->index(), " (", glfw_monitor->name(), ", ", glfw_monitor->resolution(), ").");
 }
 
 /* Replace the title of the backend monitor with the internal one. */
 void Window::_replace_title() {
     // Simply push
     glfwSetWindowTitle(this->glfw_window, this->_title.c_str());
+    logger.logc(Verbosity::important, Window::channel, "Changed window title to '", this->_title, "'.");
 }
 
 /* Resize the internal Window to the internal extent. */
 void Window::_resize_window() {
     // Simply call the GLFW function for this
     glfwSetWindowSize(this->glfw_window, static_cast<int>(this->_extent.width), static_cast<int>(this->_extent.height));
+    logger.logc(Verbosity::important, Window::channel, "Resized window to ", this->_extent, '.');
 }
 
 
@@ -233,6 +241,7 @@ void Window::_make_windowed(const VkOffset2D& new_pos) {
         // The refresh rate (which we can ignore here)
         GLFW_DONT_CARE
     );
+    logger.logc(Verbosity::important, Window::channel, "Set window mode to Windowed.");
 }
 
 /* Sets the Window to the fullscreen mode. Guaranteed to not be called in case the Window is already in fullscreen. The new window size is already set internally, just like the new Monitor. */
@@ -250,6 +259,7 @@ void Window::_make_fullscreen() {
         // The refresh rate (which we can ignore here too)
         GLFW_DONT_CARE
     );
+    logger.logc(Verbosity::important, Window::channel, "Set window mode to Fullscreen (", this->_extent, ", on monitor ", glfw_monitor->index(), " ('", glfw_monitor->name(), "')).");
 }
 
 /* Sets the Window to the windowed fullscreen mode. Guaranteed to not be called in case the Window is already in fullscreen. The new monitor is already set internally, and the rest of the properties we copy from that. */
@@ -271,6 +281,7 @@ void Window::_make_windowed_fullscreen() {
         // The refresh rate, which we take from the monitor
         glfw_monitor->idle_video_mode()->refreshRate
     );
+    logger.logc(Verbosity::important, Window::channel, "Set window mode to Windowed Fullscreen (", this->_extent, ", on monitor ", glfw_monitor->index(), " ('", glfw_monitor->name(), "')).");
 }
 
 
@@ -290,6 +301,17 @@ void Window::_reconstruct_surface() {
 
     // Re-create the internal Surface too
     this->_surface->recreate(vk_surface, { static_cast<uint32_t>(fw), static_cast<uint32_t>(fh) });
+}
+
+
+
+/* Does a single pass of the window events for this window. Returns whether the window should stay open (true) or not (false). */
+bool Window::loop() const {
+    // First, poll the GLFW events
+    glfwPollEvents();
+
+    // Next, return if the Window should close
+    return !glfwWindowShouldClose(this->glfw_window);
 }
 
 

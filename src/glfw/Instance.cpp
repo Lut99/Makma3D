@@ -75,6 +75,18 @@ Instance::~Instance() {
 
 
 
+/* Returns a list of Vulkan extensions that should be enabled when using GLFW. */
+Tools::Array<const char*> Instance::get_vulkan_extensions() {
+    // We first collect a list of GLFW extensions
+    uint32_t n_extensions = 0;
+    const char** raw_extensions = glfwGetRequiredInstanceExtensions(&n_extensions);
+
+    // Return them as an array
+    return Tools::Array<const char*>(raw_extensions, n_extensions);
+}
+
+
+
 /* Swap operator for the Instance class. */
 void GLFW::swap(Instance& i1, Instance& i2) {
     using std::swap;

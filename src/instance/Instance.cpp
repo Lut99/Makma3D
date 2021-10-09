@@ -23,7 +23,7 @@ using namespace Makma3D;
 /* Constructor for the Instance class, which takes the application name, the application version (created with VK_MAKE_VERSION), a list of Vulkan extensions to enable and a list of Vulkan layers to enable. If NDEBUG isn't defined, the Vulkan debug extension & layers are automatically enabled. */
 Instance::Instance(const std::string& application_name, uint32_t application_version, const Tools::Array<const char*>& vulkan_extensions, const Tools::Array<const char*>& vulkan_layers) :
     _glfw_instance(),
-    _vulkanic_instance(application_name, application_version, vulkan_extensions, vulkan_layers)
+    _vulkanic_instance(application_name, application_version, vulkan_extensions + this->_glfw_instance.get_vulkan_extensions(), vulkan_layers)
 {}
 
 /* Move constructor for the Instance class. */

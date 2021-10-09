@@ -89,6 +89,9 @@ namespace Makma3D::GLFW {
         /* Destructor for the Window class. */
         ~Window();
 
+        /* Does a single pass of the window events for this window. Returns whether the window should stay open (true) or not (false). */
+        virtual bool loop() const;
+
         /* Copy assignment operator for the Window class, which is deleted. */
         Window& operator=(const Window& other) = delete;
         /* Move assignment operator for the Window class. */

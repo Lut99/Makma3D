@@ -90,6 +90,9 @@ namespace Makma3D::Windowing {
         /* Uses the given GPU to create the internal swapchain. Must be called before the window can be rendered to, obviously. */
         void bind(const Vulkanic::GPU& gpu);
 
+        /* Does a single pass of the window events for this window. Returns whether the window should stay open (true) or not (false). */
+        virtual bool loop() const = 0;
+
         /* Sets the monitor of the Window, giving it a new size while at it. Only relevant when the Window is not in windowed mode (does nothing if it is).
          * @param new_monitor The new Monitor of the Window.
          * @param new_extent The new size of the Window on its new monitor. Ignored if the window is in windowed fullscreen mode.

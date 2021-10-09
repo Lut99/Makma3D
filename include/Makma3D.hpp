@@ -18,5 +18,6 @@
 
 #include "tools/Logger.hpp"
 #include "instance/Instance.hpp"
+#include "window/Window.hpp"
 
 #endif

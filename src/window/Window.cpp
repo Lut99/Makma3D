@@ -30,12 +30,7 @@ Window::Window(const Windowing::Monitor* monitor, const std::string& title, cons
     _title(title),
     _extent(extent),
     _mode(window_mode)
-{
-    // Make sure the monitor is valid
-    if (!this->_allowed_monitor(this->_monitor)) {
-        logger.fatalc(Window::channel, "Invalid monitor for ", this->_api_name(), " backend.");
-    }
-}
+{}
 
 /* Move constructor for the Window class. */
 Window::Window(Window&& other) :
@@ -168,6 +163,9 @@ void Window::set_mode(WindowMode new_mode, const VkExtent2D new_extent, const Wi
     } else {
         logger.fatalc(Window::channel, "Unsupported WindowMode '", window_mode_names[(int) new_mode], "'.");
     }
+
+    // Finally, don't forget to update the mode
+    this->_mode = new_mode;
 
     // With the mode changed, reconstruct the surface and the swapchain
     this->_reconstruct_surface();
