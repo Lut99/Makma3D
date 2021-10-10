@@ -1,5 +1,5 @@
 # Specify the libraries in this directory
-add_library(VulkanicGPU ${CMAKE_CURRENT_SOURCE_DIR}/GPU.cpp)
+add_library(VulkanicGPU ${CMAKE_CURRENT_SOURCE_DIR}/HardwareGPU.cpp) #${CMAKE_CURRENT_SOURCE_DIR}/GPU.cpp)
 
 # Set the dependencies for this library:
 target_include_directories(VulkanicGPU PUBLIC "${INCLUDE_DIRS}")

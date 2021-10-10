@@ -44,7 +44,7 @@ namespace Makma3D::GLFW {
         virtual Tools::Array<const char*> get_vulkan_extensions() const;
 
         /* Returns the primary monitor. */
-        virtual const const Windowing::Monitor* get_primary_monitor() const;
+        virtual const Windowing::Monitor* get_primary_monitor() const;
         /* Returns the list of monitors. */
         virtual const Tools::Array<const Windowing::Monitor*>& get_monitors() const;
 

@@ -158,13 +158,15 @@ const Windowing::Monitor* Window::_find_nearest_monitor() const {
     // Loop through the available monitors
     int best_area = 0;
     uint32_t best_monitor = std::numeric_limits<uint32_t>::max();
-    const Tools::Array<GLFW::Monitor> monitors = this->instance.get_monitors();
+    const Tools::Array<const Windowing::Monitor*> monitors = this->instance.get_monitors();
     for (uint32_t i = 0; i < monitors.size(); i++) {
+        const GLFW::Monitor* monitor = (const GLFW::Monitor*) monitors[i];
+
         // Get the monitor's position and size in the virtual screen
         int monitor_x, monitor_y, monitor_w, monitor_h;
-        glfwGetMonitorPos(monitors[i], &monitor_x, &monitor_y);
-        monitor_w = monitors[i].current_video_mode()->width;
-        monitor_h = monitors[i].current_video_mode()->height;
+        glfwGetMonitorPos(monitor->glfw(), &monitor_x, &monitor_y);
+        monitor_w = monitor->current_video_mode()->width;
+        monitor_h = monitor->current_video_mode()->height;
 
         // Compare the two by computing the overlapping area
         int area = max(0, min(window_x + window_w, monitor_x + monitor_w) - max(window_x, monitor_x)) *
