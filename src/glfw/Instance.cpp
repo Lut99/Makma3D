@@ -34,7 +34,9 @@ void glfw_error_callback(int code, const char* message) {
 
 /***** INSTANCE CLASS *****/
 /* Constructor for the Instance class, which doesn't take anything. */
-Instance::Instance() {
+Instance::Instance() :
+    Windowing::Instance()
+{
     // Initialize the GLFW library
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -53,19 +55,18 @@ Instance::Instance() {
     this->monitors.reserve(static_cast<uint32_t>(n_monitors));
     for (uint32_t i = 0; i < static_cast<uint32_t>(n_monitors); i++) {
         // Create the instance
-        this->monitors.push_back(GLFW::Monitor(monitors[i], i));
+        this->monitors.push_back((const Windowing::Monitor*) new GLFW::Monitor(monitors[i], i));
 
         // If this happens to be the primary monitor, set it as such
         if (monitors[i] == primary_monitor) {
-            this->primary_monitor = &this->monitors[i];
+            this->primary_monitor = this->monitors[i];
         }
     }
 }
 
 /* Move constructor for the Instance class. */
 Instance::Instance(Instance&& other) :
-    primary_monitor(other.primary_monitor),
-    monitors(std::move(other.monitors))
+    Windowing::Instance(std::move(other))
 {}
 
 /* Destructor for the Instance class. */
@@ -76,13 +77,25 @@ Instance::~Instance() {
 
 
 /* Returns a list of Vulkan extensions that should be enabled when using GLFW. */
-Tools::Array<const char*> Instance::get_vulkan_extensions() {
+Tools::Array<const char*> Instance::get_vulkan_extensions() const {
     // We first collect a list of GLFW extensions
     uint32_t n_extensions = 0;
     const char** raw_extensions = glfwGetRequiredInstanceExtensions(&n_extensions);
 
     // Return them as an array
     return Tools::Array<const char*>(raw_extensions, n_extensions);
+}
+
+
+
+/* Returns the primary monitor. */
+const const Windowing::Monitor* Instance::get_primary_monitor() const {
+    return this->primary_monitor;
+}
+
+/* Returns the list of monitors. */
+const Tools::Array<const Windowing::Monitor*>& Instance::get_monitors() const {
+    return this->monitors;
 }
 
 

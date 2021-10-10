@@ -13,7 +13,10 @@
  *   manages the debugger.
 **/
 
+#include <cstring>
+
 #include "tools/Logger.hpp"
+
 #include "vulkanic/auxillary/ErrorCodes.hpp"
 #include "vulkanic/instance/Instance.hpp"
 
@@ -196,7 +199,6 @@ Instance::Instance(const std::string& application_name, uint32_t application_ver
 
 
 
-    /* Next, initialize the debugger - but only if debug is set and the layer is enabled. */
     #ifndef NDEBUG
     // First, we load the two extension functions needed using the dynamic loader
     PFN_vkCreateDebugUtilsMessengerEXT vk_create_debug_utils_messenger_method = (PFN_vkCreateDebugUtilsMessengerEXT) load_instance_method(this->vk_instance, "vkCreateDebugUtilsMessengerEXT");
@@ -211,6 +213,20 @@ Instance::Instance(const std::string& application_name, uint32_t application_ver
         logger.fatalc(Instance::channel, "Could not create the logger: ", vk_error_map[vk_result]);
     }
     #endif
+
+
+
+    // Fetch the list of physical devices
+    uint32_t n_physical_devices;
+    vkEnumeratePhysicalDevices(this->vk_instance, &n_physical_devices, nullptr);
+    Tools::Array<VkPhysicalDevice> physical_devices(n_physical_devices);
+    vkEnumeratePhysicalDevices(this->vk_instance, &n_physical_devices, physical_devices.wdata(n_physical_devices));
+
+    // Loop through the list to convert them to physical devices
+    this->_physical_devices.reserve(n_physical_devices);
+    for(uint32_t i = 0; i < n_physical_devices; i++) {
+        this->_physical_devices.push_back(Vulkanic::HardwareGPU(physical_devices[i]));
+    }
 }
 
 /* Move constructor for the Instance class. */
@@ -237,6 +253,24 @@ Instance::~Instance() {
     if (this->vk_instance != nullptr) {
         vkDestroyInstance(this->vk_instance, nullptr);
     }
+}
+
+
+
+/* Returns whether or not the given extension is enabled in this Instance. */
+bool Instance::has_extension(const char* extension) const {
+    for (uint32_t i = 0; i < this->vk_extensions.size(); i++) {
+        if (strcmp(this->vk_extensions[i], extension) == 0) { return true; }
+    }
+    return false;
+}
+
+/* Returns whether or not the given layer is enabled in this Instance. */
+bool Instance::has_layer(const char* layer) const {
+    for (uint32_t i = 0; i < this->vk_layers.size(); i++) {
+        if (strcmp(this->vk_layers[i], layer) == 0) { return true; }
+    }
+    return false;
 }
 
 

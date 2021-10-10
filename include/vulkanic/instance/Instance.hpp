@@ -19,6 +19,7 @@
 #include <vulkan/vulkan.h>
 
 #include "arrays/Array.hpp"
+#include "vulkanic/gpu/HardwareGPU.hpp"
 
 namespace Makma3D::Vulkanic {
     /* The Vulkan instance extensions we want to be enabled. */
@@ -40,7 +41,7 @@ namespace Makma3D::Vulkanic {
     class Instance {
     public:
         /* The channel used for the Instance class. */
-        static constexpr const char* channel = "VulkanInstance";
+        static constexpr const char* channel = "VulkanicInstance";
 
     private:
         /* The VkInstance that we use, among other things. */
@@ -50,6 +51,9 @@ namespace Makma3D::Vulkanic {
         VkDebugUtilsMessengerEXT vk_debugger;
         /* The function needed to destroy the Vulkan debug messenger. */
         PFN_vkDestroyDebugUtilsMessengerEXT vk_destroy_debug_utils_messenger_method;
+
+        /* The list of physical devices registered to this instance. */
+        Tools::Array<Vulkanic::HardwareGPU> _physical_devices;
 
         /* The extensions used to create the instance. */
         Tools::Array<const char*> vk_extensions;
@@ -65,6 +69,22 @@ namespace Makma3D::Vulkanic {
         Instance(Instance&& other);
         /* Destructor for the Instance class. */
         ~Instance();
+
+        /* Returns the list of HardwareGPUs registered to the Instance. */
+        inline const Tools::Array<Vulkanic::HardwareGPU>& physical_devices() const { return this->_physical_devices; }
+
+        /* Returns whether or not the given extension is enabled in this Instance. */
+        inline bool has_extension(const std::string& extension) const { return this->has_extension(extension.c_str()); }
+        /* Returns whether or not the given extension is enabled in this Instance. */
+        bool has_extension(const char* extension) const;
+        /* Returns whether or not the given layer is enabled in this Instance. */
+        inline bool has_layer(const std::string& layer) const { return this->has_layer(layer.c_str()); }
+        /* Returns whether or not the given layer is enabled in this Instance. */
+        bool has_layer(const char* layer) const;
+        /* Returns the list of extensions with which the Instance was created. */
+        inline const Tools::Array<const char*>& extensions() const { return this->vk_extensions; }
+        /* Returns the list of layers with which the Instance was created. */
+        inline const Tools::Array<const char*>& layers() const { return this->vk_layers; }
 
         /* Explicitly returns the internal VkInstance object. */
         inline const VkInstance& vk() const { return this->vk_instance; }

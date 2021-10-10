@@ -16,6 +16,8 @@
 #ifndef MAKMA3D_GLFW_HPP
 #define MAKMA3D_GLFW_HPP
 
+#include "glfw/Instance.hpp"
 #include "glfw/Window.hpp"
+#include "glfw/Monitor.hpp"
 
 #endif

@@ -19,7 +19,7 @@
 #include <string>
 
 #include "arrays/Array.hpp"
-#include "glfw/Instance.hpp"
+#include "window/Instance.hpp"
 #include "vulkanic/instance/Instance.hpp"
 
 namespace Makma3D {
@@ -29,15 +29,14 @@ namespace Makma3D {
         /* Channel name for the Instance class. */
         static constexpr const char* channel = "Instance";
 
-    private:
-        /* The GLFW instance that we need. */
-        GLFW::Instance _glfw_instance;
+        /* The Window instance that we need. */
+        const Windowing::Instance& window;
         /* The Vulkan instance that we need. */
-        Vulkanic::Instance _vulkanic_instance;
+        const Vulkanic::Instance& vulkanic;
 
     public:
-        /* Constructor for the Instance class, which takes the application name, the application version (created with VK_MAKE_VERSION), a list of Vulkan extensions to enable and a list of Vulkan layers to enable. If NDEBUG isn't defined, the Vulkan debug extension & layers are automatically enabled. */
-        Instance(const std::string& application_name, uint32_t application_version, const Tools::Array<const char*>& vulkan_extensions, const Tools::Array<const char*>& vulkan_layers);
+        /* Constructor for the Instance class, which takes the Window instance for creating Windows and the Vulkanic Instance on which it relies. */
+        Instance(const Windowing::Instance& window_instance, const Vulkanic::Instance& vulkanic_instance);
         /* Copy constructor for the Instance class, which is deleted. */
         Instance(const Instance& other) = delete;
         /* Move constructor for the Instance class. */
@@ -45,15 +44,10 @@ namespace Makma3D {
         /* Destructor for the Instance class. */
         ~Instance();
 
-        /* Returns the GLFW instance in the Instance. */
-        inline const GLFW::Instance& glfw_instance() const { return this->_glfw_instance; }
-        /* Returns the Vulkanic instance in the Instance. */
-        inline const Vulkanic::Instance& vulkanic_instance() const { return this->_vulkanic_instance; }
-
         /* Explicitly returns the VkInstance class of the internal Vulkan Instance. */
-        inline const VkInstance& vk() const { return this->_vulkanic_instance.vk(); }
+        inline const VkInstance& vk() const { return this->vulkanic.vk(); }
         /* Implicitly returns the VkInstance class of the internal Vulkan Instance. */
-        inline operator const VkInstance&() const { return this->_vulkanic_instance.vk(); }
+        inline operator const VkInstance&() const { return this->vulkanic.vk(); }
 
         /* Copy assignment operator for the Instance class, which is deleted. */
         Instance& operator=(const Instance& other) = delete;

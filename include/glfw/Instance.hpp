@@ -19,21 +19,16 @@
 #include <glfw/glfw3.h>
 
 #include "arrays/Array.hpp"
+#include "window/Instance.hpp"
 
 #include "Monitor.hpp"
 
 namespace Makma3D::GLFW {
     /* The Instance class for the GLFW library. */
-    class Instance {
+    class Instance: public Windowing::Instance {
     public:
         /* Logging channel name for the Instance class. */
         static constexpr const char* channel = "GLFWInstance";
-
-    private:
-        /* The primary monitor as told to us by the OS. */
-        GLFW::Monitor* primary_monitor;
-        /* List of Monitor instances created with GLFW. */
-        Tools::Array<GLFW::Monitor> monitors;
 
     public:
         /* Constructor for the Instance class, which doesn't take anything. */
@@ -46,12 +41,12 @@ namespace Makma3D::GLFW {
         ~Instance();
 
         /* Returns a list of Vulkan extensions that should be enabled when using GLFW. */
-        static Tools::Array<const char*> get_vulkan_extensions();
+        virtual Tools::Array<const char*> get_vulkan_extensions() const;
 
         /* Returns the primary monitor. */
-        inline const GLFW::Monitor& get_primary_monitor() const { return *this->primary_monitor; }
+        virtual const const Windowing::Monitor* get_primary_monitor() const;
         /* Returns the list of monitors. */
-        inline const Tools::Array<GLFW::Monitor>& get_monitors() const { return this->monitors; }
+        virtual const Tools::Array<const Windowing::Monitor*>& get_monitors() const;
 
         /* Copy assignment operator for the Instance class, which is deleted. */
         Instance& operator=(const Instance& other) = delete;

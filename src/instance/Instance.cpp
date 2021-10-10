@@ -13,6 +13,7 @@
  *   instance of the Makma3D library.
 **/
 
+#include "tools/Logger.hpp"
 #include "instance/Instance.hpp"
 
 using namespace std;
@@ -20,16 +21,16 @@ using namespace Makma3D;
 
 
 /***** INSTANCE CLASS *****/
-/* Constructor for the Instance class, which takes the application name, the application version (created with VK_MAKE_VERSION), a list of Vulkan extensions to enable and a list of Vulkan layers to enable. If NDEBUG isn't defined, the Vulkan debug extension & layers are automatically enabled. */
-Instance::Instance(const std::string& application_name, uint32_t application_version, const Tools::Array<const char*>& vulkan_extensions, const Tools::Array<const char*>& vulkan_layers) :
-    _glfw_instance(),
-    _vulkanic_instance(application_name, application_version, vulkan_extensions + this->_glfw_instance.get_vulkan_extensions(), vulkan_layers)
+/* Constructor for the Instance class, which takes the Window instance for creating Windows and the Vulkanic Instance on which it relies. */
+Instance::Instance(const Windowing::Instance& window_instance, const Vulkanic::Instance& vulkanic_instance) :
+    window(window_instance),
+    vulkanic(vulkanic_instance)
 {}
 
 /* Move constructor for the Instance class. */
 Instance::Instance(Instance&& other) :
-    _glfw_instance(std::move(other._glfw_instance)),
-    _vulkanic_instance(std::move(other._vulkanic_instance))
+    window(other.window),
+    vulkanic(other.vulkanic)
 {}
 
 /* Destructor for the Instance class. */
@@ -39,8 +40,10 @@ Instance::~Instance() {}
 
 /* Swap operator for the Instance class. */
 void Makma3D::swap(Instance& i1, Instance& i2) {
-    using std::swap;
+    #ifndef NDEBUG
+    if (&i1.window != &i2.window) { logger.fatalc(Instance::channel, "Cannot swap makma instances with different window instances."); }
+    if (&i1.vulkanic != &i2.vulkanic) { logger.fatalc(Instance::channel, "Cannot swap makma instances with different vulkanic instances."); }
+    #endif
 
-    swap(i1._glfw_instance, i2._glfw_instance);
-    swap(i1._vulkanic_instance, i2._vulkanic_instance);
+    using std::swap;
 }
