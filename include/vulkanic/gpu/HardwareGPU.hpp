@@ -22,6 +22,7 @@
 #include "arrays/Array.hpp"
 #include "vulkanic/surface/Surface.hpp"
 
+#include "HardwareGPUTypes.hpp"
 #include "QueueFamilyInfo.hpp"
 
 namespace Makma3D::Vulkanic {
@@ -32,6 +33,8 @@ namespace Makma3D::Vulkanic {
         VkPhysicalDevice vk_physical_device;
         /* The properties of the physical device. */
         VkPhysicalDeviceProperties* vk_physical_device_properties;
+        /* The HardwareGPU type of the GPU. */
+        HardwareGPUType _type;
     
     public:
         /* Constructor for the HardwareGPU class, which takes the VkPhysicalDevice it is supposed to wrap. */
@@ -51,7 +54,7 @@ namespace Makma3D::Vulkanic {
         /* Returns the name of the GPU. */
         inline const char* name() const { return this->vk_physical_device_properties->deviceName; }
         /* Returns the Vulkan-assigned type of the GPU. */
-        inline VkPhysicalDeviceType type() const { return this->vk_physical_device_properties->deviceType; }
+        inline HardwareGPUType type() const { return this->_type; }
 
         /* Explicitly returns the internal VkPhysicalDevice object. */
         inline const VkPhysicalDevice& vk() const { return this->vk_physical_device; }

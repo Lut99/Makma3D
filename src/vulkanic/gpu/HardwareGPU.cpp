@@ -31,6 +31,33 @@ HardwareGPU::HardwareGPU(const VkPhysicalDevice& vk_physical_device) :
     // Query the device for its properties
     this->vk_physical_device_properties = new VkPhysicalDeviceProperties{};
     vkGetPhysicalDeviceProperties(this->vk_physical_device, this->vk_physical_device_properties);
+
+    // Select the proper type
+    switch(this->vk_physical_device_properties->deviceType) {
+        case VK_PHYSICAL_DEVICE_TYPE_CPU:
+            this->_type = HardwareGPUType::cpu;
+            break;
+
+        case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+            this->_type = HardwareGPUType::integrated;
+            break;
+
+        case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+            this->_type = HardwareGPUType::discrete;
+            break;
+
+        case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+            this->_type = HardwareGPUType::simulated;
+            break;
+
+        case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+            this->_type = HardwareGPUType::other;
+            break;
+        
+        default:
+            this->_type = HardwareGPUType::undefined;
+
+    }
 }
 
 /* Copy constructor for the HardwareGPU class. */
