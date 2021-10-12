@@ -36,6 +36,17 @@ namespace Makma3D::Vulkanic {
     /* Allows one to select one or more GPU features to enable. */
     using GPUFeatureFlags = GPUFeatureFlagsValues::feature;
 
+    /* Defines the or-operator for the GPUFeatureFlags. */
+    inline GPUFeatureFlags operator|(GPUFeatureFlags gff1, GPUFeatureFlags gff2) { return (GPUFeatureFlags) ((uint8_t) gff1 | (uint8_t) gff2); }
+    /* Defines the assign or-operator for the GPUFeatureFlags. */
+    inline GPUFeatureFlags& operator|=(GPUFeatureFlags& gff1, GPUFeatureFlags gff2) { return (GPUFeatureFlags&) ((uint8_t&) gff1 |= (uint8_t) gff2); }
+    /* Defines the and-operator for the GPUFeatureFlags. */
+    inline GPUFeatureFlags operator&(GPUFeatureFlags gff1, GPUFeatureFlags gff2) { return (GPUFeatureFlags) ((uint8_t) gff1 & (uint8_t) gff2); }
+    /* Defines the and-operator for the GPUFeatureFlags. */
+    inline GPUFeatureFlags& operator&=(GPUFeatureFlags& gff1, GPUFeatureFlags gff2) { return (GPUFeatureFlags&) ((uint8_t&) gff1 &= (uint8_t) gff2); }
+
+
+
     /* Names for the GPUFeatureFlags enum. */
     static const std::unordered_map<GPUFeatureFlags, std::string> gpu_feature_flags_names = {
         { GPUFeatureFlags::all, "all" },

@@ -59,6 +59,38 @@ HardwareGPU::~HardwareGPU() {
 
 
 
+/* Returns a QueueFamilyInfo struct with information on how the queue families are laid out for this GPU. The index of each queue family info in the array is the index of the queue family that we're talking about. */
+Tools::Array<QueueFamilyInfo> HardwareGPU::get_queue_family_info(const Vulkanic::Surface& surface) const {
+    // Get a list of all queue families
+    uint32_t n_families;
+    vkGetPhysicalDeviceQueueFamilyProperties(this->vk_physical_device, &n_families, nullptr);
+    Tools::Array<VkQueueFamilyProperties> families(n_families);
+    vkGetPhysicalDeviceQueueFamilyProperties(this->vk_physical_device, &n_families, families.wdata(n_families));
+
+    // Convert each of those to a QueueFamilyInfo struct
+    Tools::Array<QueueFamilyInfo> result(n_families);
+    for (uint32_t i = 0; i < n_families; i++) {
+        // Check whether this queue can present
+        VkBool32 can_present;
+        vkGetPhysicalDeviceSurfaceSupportKHR(this->vk_physical_device, i, surface, &can_present);
+
+        // Compute the flags for this queue type
+        QueueTypeFlags queue_types = QueueTypeFlags::none;
+        if (families[i].queueFlags & VK_QUEUE_TRANSFER_BIT) { queue_types |= QueueTypeFlags::memory; }
+        if (families[i].queueFlags & VK_QUEUE_COMPUTE_BIT)  { queue_types |= QueueTypeFlags::compute; }
+        if (families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) { queue_types |= QueueTypeFlags::graphics; }
+        if (can_present)                                    { queue_types |= QueueTypeFlags::present; }
+
+        // Push the new info
+        result.push_back(QueueFamilyInfo{
+            i,
+            queue_types, families[i].queueCount
+        });
+    }
+}
+
+
+
 /* Swap operator for the HardwareGPU class. */
 void Vulkanic::swap(HardwareGPU& hg1, HardwareGPU& hg2) {
     using std::swap;

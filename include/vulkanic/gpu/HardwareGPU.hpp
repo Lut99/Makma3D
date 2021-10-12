@@ -19,6 +19,11 @@
 
 #include <vulkan/vulkan.h>
 
+#include "arrays/Array.hpp"
+#include "vulkanic/surface/Surface.hpp"
+
+#include "QueueFamilyInfo.hpp"
+
 namespace Makma3D::Vulkanic {
     /* The HardwareGPU class, which wraps a single physical device and lists its properties. */
     class HardwareGPU {
@@ -37,6 +42,11 @@ namespace Makma3D::Vulkanic {
         HardwareGPU(HardwareGPU&& other);
         /* Destructor for the HardwareGPU class. */
         ~HardwareGPU();
+
+        /* Returns a QueueFamilyInfo struct with information on how the queue families are laid out for this GPU. The index of each queue family info in the array is the index of the queue family that we're talking about.
+         * @param surface The surface to use to test whether queues can present.
+         */
+        Tools::Array<QueueFamilyInfo> get_queue_family_info(const Vulkanic::Surface& surface) const;
 
         /* Returns the name of the GPU. */
         inline const char* name() const { return this->vk_physical_device_properties->deviceName; }

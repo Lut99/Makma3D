@@ -25,4 +25,7 @@
 #include "window/Window.hpp"
 #include "window/Monitor.hpp"
 
+#include "vulkanic/gpu/HardwareGPU.hpp"
+#include "vulkanic/gpu/GPU.hpp"
+
 #endif
