@@ -89,7 +89,7 @@ Tools::Array<const char*> Instance::get_vulkan_extensions() const {
 
 
 /* Returns the primary monitor. */
-const const Windowing::Monitor* Instance::get_primary_monitor() const {
+const Windowing::Monitor* Instance::get_primary_monitor() const {
     return this->primary_monitor;
 }
 
