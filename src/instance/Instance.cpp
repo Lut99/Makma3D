@@ -91,7 +91,9 @@ Instance::Instance(Instance&& other) :
 {}
 
 /* Destructor for the Instance class. */
-Instance::~Instance() {}
+Instance::~Instance() {
+    logger.logc(Verbosity::important, Instance::channel, "Destroying Instance...");
+}
 
 
 
@@ -102,21 +104,6 @@ Tools::Array<Extension> Instance::get_extensions() const {
         result.push_back(ext);
     }
     return result;
-}
-
-
-
-/* Returns the list of (supported) PhysicalDevices that are registered to the Vulkan backend. */
-Tools::Array<GPU::PhysicalDevice> Instance::get_physical_devices(const Windowing::Window& window) const {
-    // First, compile a list of device extensions & features to enable based on the enabled Makma3D extensions
-    Tools::Array<const char*> vk_device_extensions = {};
-    Tools::Array<Vulkanic::DeviceFeature> vk_device_features = { Vulkanic::DeviceFeature::anisotropy };
-    for (uint32_t i = 0; i < this->extensions.size(); i++) {
-        /* None, as of yet */
-    }
-
-    // Call the Vulkan instance's version of this function
-    return this->vk_instance.get_physical_devices(window.surface().vk(), vk_device_extensions, vk_device_features);
 }
 
 

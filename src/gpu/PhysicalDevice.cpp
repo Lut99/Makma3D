@@ -19,7 +19,6 @@
 
 using namespace std;
 using namespace Makma3D;
-using namespace Makma3D::GPU;
 
 
 /***** HELPER FUNCTIONS *****/
@@ -80,6 +79,7 @@ static bool gpu_supports_features(const VkPhysicalDevice& vk_physical_device, co
         switch(vk_device_features[i]) {
         case Vulkanic::DeviceFeature::anisotropy:
             if (!supported_features.samplerAnisotropy) { return false; }
+            break;
         
         default:
             logger.warningc(PhysicalDevice::channel, "Encountered unsupported device feature '", Vulkanic::device_feature_names[(int) vk_device_features[i]], "'.");
@@ -182,15 +182,13 @@ bool PhysicalDevice::is_suitable(VkPhysicalDevice vk_physical_device, VkSurfaceK
         operations_supported[0] |= !!(families[i].queueFlags & VK_QUEUE_TRANSFER_BIT);
         operations_supported[1] |= !!(families[i].queueFlags & VK_QUEUE_COMPUTE_BIT);
         operations_supported[2] |= !!(families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT);
-        operations_supported[3] |= can_present;
+        operations_supported[3] |= static_cast<bool>(can_present);
     }
 
     // If we're missing an operation type, this device is not suitable
     if (!operations_supported[0] || !operations_supported[1] || !operations_supported[2] || !operations_supported[3]) { return false; }
-
     // Otherwise, make sure it supports the required extensions as well
     if (!gpu_supports_extensions(vk_physical_device, vk_device_extensions)) { return false; }
-
     // Finally, make sure the required features are supported too
     if (!gpu_supports_features(vk_physical_device, vk_device_features)) { return false; }
 
@@ -201,7 +199,7 @@ bool PhysicalDevice::is_suitable(VkPhysicalDevice vk_physical_device, VkSurfaceK
 
 
 /* Swap operator for the PhysicalDevice class. */
-void GPU::swap(PhysicalDevice& pd1, PhysicalDevice& pd2) {
+void Makma3D::swap(PhysicalDevice& pd1, PhysicalDevice& pd2) {
     using std::swap;
 
     swap(pd1.vk_physical_device, pd2.vk_physical_device);

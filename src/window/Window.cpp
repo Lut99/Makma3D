@@ -21,12 +21,11 @@
 
 using namespace std;
 using namespace Makma3D;
-using namespace Makma3D::Windowing;
 
 
 /***** WINDOW CLASS *****/
 /* Constructor for the Window class. */
-Window::Window(const Makma3D::Instance& instance, const Windowing::Monitor* monitor, const std::string& title, const VkExtent2D& extent, Windowing::WindowMode mode) :
+Window::Window(const Makma3D::Instance& instance, const Monitor* monitor, const std::string& title, const VkExtent2D& extent, WindowMode mode) :
     instance(instance),
 
     _monitor(monitor),
@@ -40,8 +39,8 @@ Window::Window(const Makma3D::Instance& instance, const Windowing::Monitor* moni
 
     // Create the window differently based on the window mode
     switch(this->_mode) {
-    case Windowing::WindowMode::windowed:
-    case Windowing::WindowMode::windowed_resizeable:
+    case WindowMode::windowed:
+    case WindowMode::windowed_resizeable:
         if (this->_monitor != nullptr) {
             logger.warningc(Window::channel, "Monitor given unnecessarily for Windowed window mode; ignoring.");
             delete this->_monitor;
@@ -50,12 +49,12 @@ Window::Window(const Makma3D::Instance& instance, const Windowing::Monitor* moni
         this->glfw_window = glfwCreateWindow(static_cast<int>(this->_extent.width), static_cast<int>(this->_extent.height), this->_title.c_str(), NULL, NULL);
         break;
 
-    case Windowing::WindowMode::fullscreen:
+    case WindowMode::fullscreen:
         if (this->_monitor == nullptr) { logger.fatalc(Window::channel, "Missing monitor for Fullscreen window mode."); }
         this->glfw_window = glfwCreateWindow(static_cast<int>(this->_extent.width), static_cast<int>(this->_extent.height), this->_title.c_str(), monitor->glfw(), NULL);
         break;
 
-    case Windowing::WindowMode::windowed_fullscreen: {
+    case WindowMode::windowed_fullscreen: {
         if (this->_monitor == nullptr) { logger.fatalc(Window::channel, "Missing monitor for Windowed Fullscreen window mode."); }
 
         // Overwrite the internal size with the one given by the video mode
@@ -75,7 +74,7 @@ Window::Window(const Makma3D::Instance& instance, const Windowing::Monitor* moni
     }
 
     default:
-        logger.fatalc(Window::channel, "Unsupported WindowMode '", Windowing::window_mode_names[(int) this->_mode], "'.");
+        logger.fatalc(Window::channel, "Unsupported WindowMode '", window_mode_names[(int) this->_mode], "'.");
 
     }
 
@@ -96,19 +95,19 @@ Window::Window(const Makma3D::Instance& instance, const Windowing::Monitor* moni
     // Do a success print
     if (logger.get_verbosity() >= Verbosity::debug) {
         switch(this->_mode) {
-        case Windowing::WindowMode::windowed:
+        case WindowMode::windowed:
             logger.logc(Verbosity::important, Window::channel, "Initialized Window '", this->_title, "' with size ", this->_extent.width, 'x', this->_extent.height, " in Windowed mode.");
             break;
             
-        case Windowing::WindowMode::windowed_resizeable:
+        case WindowMode::windowed_resizeable:
             logger.logc(Verbosity::important, Window::channel, "Initialized Window '", this->_title, "' with size ", this->_extent.width, 'x', this->_extent.height, " in Windowed Resizeable mode.");
             break;
 
-        case Windowing::WindowMode::fullscreen:
+        case WindowMode::fullscreen:
             logger.logc(Verbosity::important, Window::channel, "Initialized Window '", this->_title, "' with size ", this->_extent.width, 'x', this->_extent.height, " in Fullscreen mode on monitor ", this->_monitor->index(), '.');
             break;
 
-        case Windowing::WindowMode::windowed_fullscreen:
+        case WindowMode::windowed_fullscreen:
             logger.logc(Verbosity::important, Window::channel, "Initialized Window '", this->_title, "' with size ", this->_extent.width, 'x', this->_extent.height, " in WindowedFullscreen mode on monitor ", this->_monitor->index(), '.');
             break;
 
@@ -153,12 +152,15 @@ Window::~Window() {
     if (this->glfw_window != nullptr) {
         glfwDestroyWindow(this->glfw_window);
     }
+
+    // Do some nice debug print
+    logger.logc(Verbosity::important, Window::channel, "Destroyed Window.");
 }
 
 
 
 /* Returns the nearest monitor to the current Window position. Only called if the current mode is windowed. */
-const Windowing::Monitor* Window::_find_nearest_monitor() const {
+const Monitor* Window::_find_nearest_monitor() const {
     // Get the window's position and size in the virtual screen
     int window_x, window_y, window_w, window_h;
     glfwGetWindowPos(this->glfw_window, &window_x, &window_y);
@@ -167,7 +169,7 @@ const Windowing::Monitor* Window::_find_nearest_monitor() const {
     // Loop through the available monitors
     int best_area = 0;
     uint32_t best_monitor = std::numeric_limits<uint32_t>::max();
-    const Tools::Array<const Windowing::Monitor*>& monitors = this->instance.get_monitors();
+    const Tools::Array<const Monitor*>& monitors = this->instance.get_monitors();
     for (uint32_t i = 0; i < monitors.size(); i++) {
         // Get the monitor's position and size in the virtual screen
         const VkOffset2D& offset = monitors[i]->scaled_offset();
@@ -227,7 +229,7 @@ bool Window::loop() const {
 
 
 /* Sets the monitor of the Window, giving it a new size while at it. Only relevant when the Window is not in windowed mode (does nothing if it is). */
-void Window::set_monitor(const Windowing::Monitor* new_monitor, const VkExtent2D& new_extent) {
+void Window::set_monitor(const Monitor* new_monitor, const VkExtent2D& new_extent) {
     // If the current mode is Windowed, do nothing
     if (this->_mode == WindowMode::windowed) { return; }
 
@@ -287,7 +289,7 @@ void Window::set_extent(const VkExtent2D& new_extent) {
 }
 
 /* Changes the Window mode to the given one. */
-void Window::set_mode(WindowMode new_mode, const VkExtent2D new_extent, const Windowing::Monitor* new_monitor) {
+void Window::set_mode(WindowMode new_mode, const VkExtent2D new_extent, const Monitor* new_monitor) {
     // Check if the mode is different
     if (this->_mode == new_mode) { return; }
 
@@ -405,8 +407,23 @@ void Window::set_mode(WindowMode new_mode, const VkExtent2D new_extent, const Wi
 
 
 
+/* Returns the list of (supported) PhysicalDevices that can render to this Window. */
+Tools::Array<PhysicalDevice> Window::get_physical_devices() const {
+    // First, compile a list of device extensions & features to enable based on the enabled Makma3D extensions
+    Tools::Array<const char*> vk_device_extensions = {};
+    Tools::Array<Vulkanic::DeviceFeature> vk_device_features = { Vulkanic::DeviceFeature::anisotropy };
+    for (uint32_t i = 0; i < this->instance.extensions.size(); i++) {
+        /* None, as of yet */
+    }
+
+    // Call the Vulkan instance's version of this function
+    return this->instance.vk_instance.get_physical_devices(this->_surface->vk(), vk_device_extensions, vk_device_features);
+}
+
+
+
 /* Swap operator for the Window class. */
-void Windowing::swap(Window& w1, Window& w2) {
+void Makma3D::swap(Window& w1, Window& w2) {
     using std::swap;
 
     swap(w1.glfw_window, w2.glfw_window);

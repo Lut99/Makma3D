@@ -21,7 +21,7 @@
 
 using namespace std;
 using namespace Makma3D;
-using namespace Makma3D::Windowing;
+using namespace Makma3D::GLFW;
 
 
 /***** CONSTANTS *****/
@@ -45,26 +45,21 @@ void glfw_error_callback(int code, const char* message) {
 
 /***** INSTANCE CLASS *****/
 /* Constructor for the Instance class. */
-Instance::Instance() {
-    // Get a list of all monitors
-    int n_monitors;
-    GLFWmonitor** monitors = glfwGetMonitors(&n_monitors);
-    if (monitors == nullptr) {
-        logger.fatalc(Instance::channel, "Could not get list of GLFW monitors.");
-    }
-
-    // Create a Monitor class for each of them and store them internally
-    this->_monitors.reserve(static_cast<uint32_t>(n_monitors));
-    for (int i = 0; i < n_monitors; i++) {
-        this->_monitors.push_back(new Monitor(monitors[i], static_cast<uint32_t>(i)));
-    }
-}
+Instance::Instance() {}
 
 /* Move constructor for the Instance class. */
-Instance::Instance(Instance&& other) {}
+Instance::Instance(Instance&& other) :
+    _primary(other._primary),
+    _monitors(std::move(other._monitors))
+{}
 
 /* Destructor for the Instance class. */
 Instance::~Instance() {
+    // Destroy the windows
+    for (uint32_t i = 0; i < this->_monitors.size(); i++) {
+        delete this->_monitors[i];
+    }
+
     // Destroy the GLFW library
     glfwTerminate();
 }
@@ -76,6 +71,23 @@ void Instance::init() {
     // Initialize the GLFW library
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+    // Next, initialize all monitors, so get a list of 'em from GLFW
+    int n_monitors;
+    GLFWmonitor* primary = glfwGetPrimaryMonitor();
+    GLFWmonitor** monitors = glfwGetMonitors(&n_monitors);
+    if (monitors == nullptr) {
+        logger.fatalc(Instance::channel, "Could not get list of GLFW monitors.");
+    }
+
+    // Create a Monitor class for each of them and store them internally
+    this->_monitors.reserve(static_cast<uint32_t>(n_monitors));
+    for (int i = 0; i < n_monitors; i++) {
+        this->_monitors.push_back(new Monitor(monitors[i], static_cast<uint32_t>(i)));
+        if (this->_monitors.last()->glfw() == primary) {
+            this->_primary = this->_monitors.last();
+        }
+    }
 }
 
 /* Initializes the debugging part of the instance. */
@@ -101,6 +113,9 @@ Tools::Array<const char*> Instance::get_vulkan_extensions() const {
 
 
 /* Swap operator for the Instance class. */
-void Windowing::swap(Instance& i1, Instance& i2) {
+void GLFW::swap(Instance& i1, Instance& i2) {
     using std::swap;
+
+    swap(i1._primary, i2._primary);
+    swap(i1._monitors, i2._monitors);
 }

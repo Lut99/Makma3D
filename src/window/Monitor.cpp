@@ -17,7 +17,6 @@
 
 using namespace std;
 using namespace Makma3D;
-using namespace Makma3D::Windowing;
 
 
 /***** MONITOR CLASS *****/

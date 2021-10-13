@@ -20,7 +20,7 @@
 #include <glfw/glfw3.h>
 #include <vulkan/vulkan.h>
 
-namespace Makma3D::Windowing {
+namespace Makma3D {
     /* The Monitor class, which is a virtual interface to the window API-specific wrapper around its own Monitor structs. */
     class Monitor {
     public:

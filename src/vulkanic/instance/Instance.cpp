@@ -231,7 +231,7 @@ void Instance::init_debug() {
 
 
 /* Returns the list of (supported) PhysicalDevices that are currently registered to the Vulkan backend. */
-Tools::Array<GPU::PhysicalDevice> Instance::get_physical_devices(VkSurfaceKHR vk_surface, const Tools::Array<const char*>& vk_device_extensions, const Tools::Array<Vulkanic::DeviceFeature>& vk_device_features) const {
+Tools::Array<PhysicalDevice> Instance::get_physical_devices(VkSurfaceKHR vk_surface, const Tools::Array<const char*>& vk_device_extensions, const Tools::Array<Vulkanic::DeviceFeature>& vk_device_features) const {
     // Get the devices from Vulkan
     uint32_t n_physical_devices;
     vkEnumeratePhysicalDevices(this->vk_instance, &n_physical_devices, nullptr);
@@ -239,10 +239,10 @@ Tools::Array<GPU::PhysicalDevice> Instance::get_physical_devices(VkSurfaceKHR vk
     vkEnumeratePhysicalDevices(this->vk_instance, &n_physical_devices, physical_devices.wdata(n_physical_devices));
 
     // For each of them, check if they are compatible, and add them to the list as a PhysicalDevice if they are
-    Tools::Array<GPU::PhysicalDevice> result(n_physical_devices);
+    Tools::Array<PhysicalDevice> result(n_physical_devices);
     for (uint32_t i = 0; i < n_physical_devices; i++) {
-        if (GPU::PhysicalDevice::is_suitable(physical_devices[i], vk_surface, vk_device_extensions, vk_device_features)) {
-            result.push_back(GPU::PhysicalDevice(physical_devices[i], i));
+        if (PhysicalDevice::is_suitable(physical_devices[i], vk_surface, vk_device_extensions, vk_device_features)) {
+            result.push_back(PhysicalDevice(physical_devices[i], i));
         }
     }
 

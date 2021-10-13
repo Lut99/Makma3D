@@ -23,7 +23,7 @@
 
 #include "PhysicalDeviceType.hpp"
 
-namespace Makma3D::GPU {
+namespace Makma3D {
     /* The PhysicalDevice class, which represents a single GPU registered in the Vulkan instance. */
     class PhysicalDevice {
     public:

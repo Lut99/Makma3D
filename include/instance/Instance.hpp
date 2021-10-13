@@ -21,7 +21,6 @@
 
 #include "arrays/Array.hpp"
 #include "window/Instance.hpp"
-#include "window/Window.hpp"
 #include "vulkanic/instance/Instance.hpp"
 
 #include "Version.hpp"
@@ -40,9 +39,13 @@ namespace Makma3D {
         /* The enabled Makma3D extensions in this Instance. */
         std::unordered_set<Extension> extensions;
         /* The Window instance that handles the GLFW side of instancing. */
-        Windowing::Instance glfw_instance;
+        GLFW::Instance glfw_instance;
         /* The Vulkan instance that handles the Vulkan side of instancing. */
         Vulkanic::Instance vk_instance;
+
+
+        /* Declare the Window class a friend of ours. */
+        friend class Window;
 
     public:
         /* Protected constructor for the Instance class.
@@ -66,13 +69,9 @@ namespace Makma3D {
         Tools::Array<Extension> get_extensions() const;
 
         /* Returns the primary monitor as given by GLFW. */
-        inline const Windowing::Monitor* get_primary_monitor() const { return this->glfw_instance.get_primary_monitor(); }
+        inline const Monitor* get_primary_monitor() const { return this->glfw_instance.get_primary_monitor(); }
         /* Returns the list of available monitors as given by GLFW. */
-        inline const Tools::Array<const Windowing::Monitor*>& get_monitors() const { return this->glfw_instance.get_monitors(); }
-        /* Returns the list of (supported) PhysicalDevices that are registered to the Vulkan backend.
-         * @param window The Window with which we check if the device can perform present operations.
-         * @returns The list of Makma3D-suitable physical devices that we found. Empty if no such devices are present. */
-        Tools::Array<GPU::PhysicalDevice> get_physical_devices(const Windowing::Window& window) const;
+        inline const Tools::Array<const Monitor*>& get_monitors() const { return this->glfw_instance.get_monitors(); }
 
         /* Explicitly returns the internal VkInstance object. */
         inline const VkInstance& vk() const { return this->vk_instance.vk(); }

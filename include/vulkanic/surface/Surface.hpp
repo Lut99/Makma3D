@@ -19,11 +19,6 @@
 #include "instance/Instance.hpp"
 
 namespace Makma3D::Vulkanic {
-    /* Forward declaration of the Instance class. */
-    extern class Makma3D::Instance;
-
-
-
     /* The Surface class, which wraps a VkSurfaceKHR object that comes from a window library. */
     class Surface {
     public:

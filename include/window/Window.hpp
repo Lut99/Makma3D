@@ -20,18 +20,14 @@
 #include <vulkan/vulkan.h>
 
 #include "instance/Instance.hpp"
+#include "gpu/PhysicalDevice.hpp"
 #include "vulkanic/surface/Surface.hpp"
 // #include "vulkanic/gpu/GPU.hpp"
 
 #include "WindowMode.hpp"
 #include "Monitor.hpp"
 
-namespace Makma3D::Windowing {
-    /* Forward declaration of the Instance class. */
-    extern class Makma3D::Instance;
-
-
-
+namespace Makma3D {
     /* The Window class, which represents a single, renderable Window. Is technically a purely virtual class, as window APIs implement their own derivative. */
     class Window {
     public:
@@ -46,7 +42,7 @@ namespace Makma3D::Windowing {
         GLFWwindow* glfw_window;
 
         /* The monitor where the Window lives, if relevant. Is set to nullptr otherwise. */
-        const Windowing::Monitor* _monitor;
+        const Monitor* _monitor;
 
         /* The title of the Window. */
         std::string _title;
@@ -62,7 +58,7 @@ namespace Makma3D::Windowing {
 
 
         /* Returns the nearest monitor to the current Window position. Only called if the current mode is windowed. */
-        const Windowing::Monitor* _find_nearest_monitor() const;
+        const Monitor* _find_nearest_monitor() const;
         /* Private helper function that reconstructs the Surface. */
         void _reconstruct_surface();
         /* Private helper function that reconstructs the Swapchain. */
@@ -76,7 +72,7 @@ namespace Makma3D::Windowing {
          * @param extent The desired size (in pixels) of the Window. Will be ignored if the WindowMode is set to windowed fullscreen.
          * @param mode The WindowMode for the Window.
          */
-        Window(const Makma3D::Instance& instance, const Windowing::Monitor* monitor, const std::string& title, const VkExtent2D& extent, Windowing::WindowMode mode);
+        Window(const Makma3D::Instance& instance, const Monitor* monitor, const std::string& title, const VkExtent2D& extent, WindowMode mode);
         /* Copy constructor for the Window class, which is deleted. */
         Window(const Window& other) = delete;
         /* Move constructor for the Window class. */
@@ -94,7 +90,7 @@ namespace Makma3D::Windowing {
          * @param new_monitor The new Monitor of the Window.
          * @param new_extent The new size of the Window on its new monitor. Ignored if the window is in windowed fullscreen mode.
          */
-        void set_monitor(const Windowing::Monitor* new_monitor, const VkExtent2D& new_extent);
+        void set_monitor(const Monitor* new_monitor, const VkExtent2D& new_extent);
         /* Sets the title of the Window.
          * @param new_title The new title of the Window.
          */
@@ -108,10 +104,13 @@ namespace Makma3D::Windowing {
          * @param new_extent The new size of the Window. Ignored if the new mode is windowed fullscreen.
          * @param new_monitor The new monitor of the Window. Use nullptr to use the window already here, or to find the closest monitor in case we're coming from windowed mode. Ignored if we're going to windowed mode.
          */
-        void set_mode(WindowMode new_mode, const VkExtent2D new_extent, const Windowing::Monitor* new_monitor);
+        void set_mode(WindowMode new_mode, const VkExtent2D new_extent, const Monitor* new_monitor);
+
+        /* Returns the list of (supported) PhysicalDevices that can render to this Window. */
+        Tools::Array<PhysicalDevice> get_physical_devices() const;
 
         /* Returns the monitor to which the Window is bound, if relevant (i.e., not windowed). Returns nullptr otherwise. */
-        inline const Windowing::Monitor* monitor() const { return this->_monitor; }
+        inline const Monitor* monitor() const { return this->_monitor; }
         /* Returns the title of the Window. */
         inline const std::string& title() const { return this->_title; }
         /* Returns the size (extent) of the Window as a VkExtent2D struct. */

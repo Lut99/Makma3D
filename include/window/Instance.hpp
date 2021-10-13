@@ -19,7 +19,7 @@
 
 #include "Monitor.hpp"
 
-namespace Makma3D::Windowing {
+namespace Makma3D::GLFW {
     /* The Instance class, which forms the baseclass of all API backend Instances. */
     class Instance {
     public:
@@ -28,9 +28,9 @@ namespace Makma3D::Windowing {
 
     private:
         /* Reference to the Primary monitor in the Instance. */
-        const Windowing::Monitor* _primary;
+        const Monitor* _primary;
         /* The list of monitors as reported by GLFW. */
-        Tools::Array<const Windowing::Monitor*> _monitors;
+        Tools::Array<const Monitor*> _monitors;
 
     public:
         /* Constructor for the Instance class. */
@@ -51,9 +51,9 @@ namespace Makma3D::Windowing {
         Tools::Array<const char*> get_vulkan_extensions() const;
 
         /* Returns the primary monitor as given by GLFW. */
-        inline const Windowing::Monitor* get_primary_monitor() const { return this->_primary; }
+        inline const Monitor* get_primary_monitor() const { return this->_primary; }
         /* Returns the list of available monitors as given by GLFW. */
-        inline const Tools::Array<const Windowing::Monitor*>& get_monitors() const { return this->_monitors; }
+        inline const Tools::Array<const Monitor*>& get_monitors() const { return this->_monitors; }
 
         /* Copy assignment operator for the Instance class, which is deleted. */
         Instance& operator=(const Instance& other) = delete;

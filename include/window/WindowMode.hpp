@@ -18,7 +18,7 @@
 
 #include <string>
 
-namespace Makma3D::Windowing {
+namespace Makma3D {
     /* The WindowMode enum, which determines the mode the window is in. */
     enum class WindowMode {
         /* Meta enum value for when no mode is defined. */

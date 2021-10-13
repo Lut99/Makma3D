@@ -79,7 +79,7 @@ namespace Makma3D::Vulkanic {
          * @param vk_device_extensions The list of Vulkan GPU extensions that the device should at least support.
          * @param vk_device_features The list of Vulkan GPU features (as Vulkanic::DeviceFeatures enums) that the device should at least support.
          * @returns The list of Makma3D-suitable physical devices that we found. Empty if no such devices are present. */
-        Tools::Array<GPU::PhysicalDevice> get_physical_devices(VkSurfaceKHR vk_surface, const Tools::Array<const char*>& vk_device_extensions, const Tools::Array<Vulkanic::DeviceFeature>& vk_device_features) const;
+        Tools::Array<PhysicalDevice> get_physical_devices(VkSurfaceKHR vk_surface, const Tools::Array<const char*>& vk_device_extensions, const Tools::Array<Vulkanic::DeviceFeature>& vk_device_features) const;
 
         /* Explicitly returns the internal VkInstance object. */
         inline const VkInstance& vk() const { return this->vk_instance; }

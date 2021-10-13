@@ -17,7 +17,7 @@
 
 #include <string>
 
-namespace Makma3D::GPU {
+namespace Makma3D {
     /* Enum that lists the possible GPU types. Very closely based on Vulkan's VkPhysicalDeviceType enum. */
     enum class PhysicalDeviceType {
         /* Meta type for when nothing is specified. */

@@ -1,5 +1,5 @@
 # Specify the libraries in this directory
-add_library(Window ${CMAKE_CURRENT_SOURCE_DIR}/Monitor.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Window.cpp)
+add_library(Window ${CMAKE_CURRENT_SOURCE_DIR}/Instance.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Monitor.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Window.cpp)
 
 # Set the dependencies for this library:
 target_include_directories(Window PUBLIC "${INCLUDE_DIRS}")
