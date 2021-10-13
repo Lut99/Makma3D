@@ -16,9 +16,14 @@
 #ifndef VULKANIC_SURFACE_HPP
 #define VULKANIC_SURFACE_HPP
 
-#include "vulkanic/instance/Instance.hpp"
+#include "instance/Instance.hpp"
 
 namespace Makma3D::Vulkanic {
+    /* Forward declaration of the Instance class. */
+    extern class Makma3D::Instance;
+
+
+
     /* The Surface class, which wraps a VkSurfaceKHR object that comes from a window library. */
     class Surface {
     public:
@@ -26,7 +31,7 @@ namespace Makma3D::Vulkanic {
         static constexpr const char* channel = "VulkanicSurface";
 
         /* The Instance with which the Surface is instantiated. */
-        const Vulkanic::Instance& instance;
+        const Makma3D::Instance& instance;
     
     private:
         /* The VkSurfaceKHR object that we wrap. */
@@ -35,8 +40,11 @@ namespace Makma3D::Vulkanic {
         VkExtent2D _extent;
     
     public:
-        /* Constructor for the Surface class, which takes an instance with which the surface is create, said surface it's supposed to wrap and the size (in pixels) of the surface's framebuffer. The Surface will be automatically destroyed when the class is. */
-        Surface(const Vulkanic::Instance& instance, const VkSurfaceKHR& vk_surface, const VkExtent2D& extent);
+        /* Constructor for the Surface class.
+         * @param instance An instance with which the surface is created.
+         * @param vk_surface The surface this class is supposed to wrap. Will be automatically destroyed when this class is destructed.
+         * @param extent The size (in pixels) of the surface's framebuffer. */
+        Surface(const Makma3D::Instance& instance, const VkSurfaceKHR& vk_surface, const VkExtent2D& extent);
         /* Copy constructor for the Surface class, which is deleted as a window only has one surface at a time. */
         Surface(const Surface& other) = delete;
         /* Move constructor for the Surface class. */

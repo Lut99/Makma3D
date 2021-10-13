@@ -24,12 +24,14 @@ namespace Makma3D::Windowing {
         /* Meta enum value for when no mode is defined. */
         undefined = 0,
 
-        /* A Windowed window. */
+        /* A Windowed window that cannot be resized. */
         windowed = 1,
+        /* A Windowed window that _can_ be resized. Is otherwise completely identical. */
+        windowed_resizeable = 2,
         /* A Fullscreen window. */
-        fullscreen = 2,
+        fullscreen = 3,
         /* A Windowed Fullscreen window. */
-        windowed_fullscreen = 3
+        windowed_fullscreen = 4
     };
 
     /* Maps WindowMode enum values to readable strings. */
@@ -37,8 +39,9 @@ namespace Makma3D::Windowing {
         "undefined",
 
         "windowed",
+        "windowed resizeable",
         "fullscreen",
-        "windowed_fullscreen"
+        "windowed fullscreen"
     };
 
 }

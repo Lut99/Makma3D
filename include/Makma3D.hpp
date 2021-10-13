@@ -17,15 +17,13 @@
 #define MAKMA3D_HPP
 
 #include "tools/Logger.hpp"
-
 #include "instance/Instance.hpp"
-#include "window/Instance.hpp"
 
 #include "window/WindowMode.hpp"
 #include "window/Window.hpp"
 #include "window/Monitor.hpp"
 
-#include "vulkanic/gpu/HardwareGPU.hpp"
-#include "vulkanic/gpu/GPU.hpp"
+#include "gpu/PhysicalDeviceType.hpp"
+#include "gpu/PhysicalDevice.hpp"
 
 #endif

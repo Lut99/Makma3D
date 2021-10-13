@@ -19,20 +19,32 @@
 
 #include <vulkan/vulkan.h>
 
+#include "instance/Instance.hpp"
 #include "vulkanic/surface/Surface.hpp"
-#include "vulkanic/gpu/GPU.hpp"
+// #include "vulkanic/gpu/GPU.hpp"
 
 #include "WindowMode.hpp"
 #include "Monitor.hpp"
 
 namespace Makma3D::Windowing {
+    /* Forward declaration of the Instance class. */
+    extern class Makma3D::Instance;
+
+
+
     /* The Window class, which represents a single, renderable Window. Is technically a purely virtual class, as window APIs implement their own derivative. */
     class Window {
     public:
         /* Channel name for the Window class. */
         static constexpr const char* channel = "Window";
 
+        /* The Instance to which this Window is bound. */
+        const Makma3D::Instance& instance;
+
     protected:
+        /* The Window itself. */
+        GLFWwindow* glfw_window;
+
         /* The monitor where the Window lives, if relevant. Is set to nullptr otherwise. */
         const Windowing::Monitor* _monitor;
 
@@ -46,52 +58,37 @@ namespace Makma3D::Windowing {
         /* The Surface object used to create a Swapchain with. */
         Vulkanic::Surface* _surface;
         /* The Swapchain object that we wrap. */
+        /* TBD */
 
 
-        /* Protected constructor for the Window class, which doesn't do anything except taking some of the window's properties. That means it's the derived class' constructor responsibility to create the Surface. */
-        Window(const Windowing::Monitor* monitor, const std::string& title, const VkExtent2D& extent, WindowMode window_mode);
-
-        /* Returns the backend API's name. */
-        virtual const char* _api_name() const = 0;
-        /* Checks if the given monitor makes sense for this API backend.
-         * @param monitor The monitor to check.
-         */
-        virtual bool _allowed_monitor(const Windowing::Monitor* monitor) const = 0;
         /* Returns the nearest monitor to the current Window position. Only called if the current mode is windowed. */
-        virtual const Windowing::Monitor* _find_nearest_monitor() const = 0;
-        
-        /* Replace the backend monitor with the internal one. The internal WindowMode is already set properly at this point. */
-        virtual void _replace_monitor() = 0;
-        /* Replace the title of the backend monitor with the internal one. */
-        virtual void _replace_title() = 0;
-        /* Resize the internal Window to the internal extent. */
-        virtual void _resize_window() = 0;
-
-        /* Sets the Window to the windowed mode. Guaranteed to not be called in the case the Window is already windowed. The new window size is already set internally. The internal Monitor is not yet destroyed at this point, but will be after this call returns.
-         * @param new_pos The new position of the Window on the virtual screen as a VkOffset2D.
-         */
-        virtual void _make_windowed(const VkOffset2D& new_pos) = 0;
-        /* Sets the Window to the fullscreen mode. Guaranteed to not be called in case the Window is already in fullscreen. The new window size is already set internally, just like the new Monitor. */
-        virtual void _make_fullscreen() = 0;
-        /* Sets the Window to the windowed fullscreen mode. Guaranteed to not be called in case the Window is already in fullscreen. The new monitor is already set internally, and the rest of the properties we copy from that. */
-        virtual void _make_windowed_fullscreen() = 0;
-
-        /* Reconstruct the internal Surface from the internal Window. */
-        virtual void _reconstruct_surface() = 0;
+        const Windowing::Monitor* _find_nearest_monitor() const;
+        /* Private helper function that reconstructs the Surface. */
+        void _reconstruct_surface();
+        /* Private helper function that reconstructs the Swapchain. */
+        /* TBD */
 
     public:
+        /* Constructor for the Window class.
+         * @param instance Instance to base the internal Vulkan structures on. Will also be used to select the nearest monitor in case we're going fullscreen from windowed.
+         * @param monitor The Monitor where the Window will be spawned. Will be ignored if the WindowMode is set to windowed.
+         * @param title String title for the Window.
+         * @param extent The desired size (in pixels) of the Window. Will be ignored if the WindowMode is set to windowed fullscreen.
+         * @param mode The WindowMode for the Window.
+         */
+        Window(const Makma3D::Instance& instance, const Windowing::Monitor* monitor, const std::string& title, const VkExtent2D& extent, Windowing::WindowMode mode);
         /* Copy constructor for the Window class, which is deleted. */
         Window(const Window& other) = delete;
         /* Move constructor for the Window class. */
         Window(Window&& other);
         /* Destructor for the Window class. */
-        virtual ~Window();
+        ~Window();
 
-        /* Uses the given GPU to create the internal swapchain. Must be called before the window can be rendered to, obviously. */
-        void bind(const Vulkanic::GPU& gpu);
+        // /* Uses the given GPU to create the internal swapchain. Must be called before the window can be rendered to, obviously. */
+        // void bind(const Vulkanic::GPU& gpu);
 
         /* Does a single pass of the window events for this window. Returns whether the window should stay open (true) or not (false). */
-        virtual bool loop() const = 0;
+        bool loop() const;
 
         /* Sets the monitor of the Window, giving it a new size while at it. Only relevant when the Window is not in windowed mode (does nothing if it is).
          * @param new_monitor The new Monitor of the Window.

@@ -1,5 +1,5 @@
 # Add the subdirectories
-add_subdirectory(gpu)
+# add_subdirectory(gpu)
 add_subdirectory(surface)
 add_subdirectory(instance)
 

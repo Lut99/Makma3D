@@ -19,7 +19,7 @@
 #include <vulkan/vulkan.h>
 
 #include "arrays/Array.hpp"
-#include "vulkanic/gpu/HardwareGPU.hpp"
+#include "gpu/PhysicalDevice.hpp"
 
 namespace Makma3D::Vulkanic {
     /* The Vulkan instance extensions we want to be enabled. */
@@ -51,18 +51,11 @@ namespace Makma3D::Vulkanic {
         VkDebugUtilsMessengerEXT vk_debugger;
         /* The function needed to destroy the Vulkan debug messenger. */
         PFN_vkDestroyDebugUtilsMessengerEXT vk_destroy_debug_utils_messenger_method;
-
-        /* The list of physical devices registered to this instance. */
-        Tools::Array<Vulkanic::HardwareGPU> _physical_devices;
-
-        /* The extensions used to create the instance. */
-        Tools::Array<const char*> vk_extensions;
-        /* The layers used to create the instance. */
-        Tools::Array<const char*> vk_layers;
     
     public:
-        /* Constructor for the Instance class, which takes the application name, the application version, a list of extensions to enable at the instance and layers to enable. Create the version with VK_MAKE_VERSION. */
-        Instance(const std::string& application_name, uint32_t application_version, const Tools::Array<const char*>& extensions, const Tools::Array<const char*>& layers);
+        /* Constructor for the Instance class.
+         * Doesn't do the actual initialization, though; use init() and init_debug() for that. */
+        Instance();
         /* Copy constructor for the Instance class, which is deleted. */
         Instance(const Instance& other) = delete;
         /* Move constructor for the Instance class. */
@@ -70,21 +63,23 @@ namespace Makma3D::Vulkanic {
         /* Destructor for the Instance class. */
         ~Instance();
 
-        /* Returns the list of HardwareGPUs registered to the Instance. */
-        inline const Tools::Array<Vulkanic::HardwareGPU>& physical_devices() const { return this->_physical_devices; }
+        /* Initializes the instance.
+         * @param application_name The name of the application.
+         * @param application_version The version of the application, as given by VK_MAKE_VERSION().
+         * @param makma_version The version of the Makma3D engine, as given by VK_MAKE_VERSION().
+         * @param extensions The list of Vulkan extensions to enable.
+         * @param layers The list of Vulkan layers to enable. */
+        void init(const char* application_name, uint32_t application_version, uint32_t makma_version, const Tools::Array<const char*>& extensions, const Tools::Array<const char*>& layers);
+        /* Initializes the debugging part of the instance.
+         * Requires the appropriate extensions and layers already to be defined during the init() stage. */
+        void init_debug();
 
-        /* Returns whether or not the given extension is enabled in this Instance. */
-        inline bool has_extension(const std::string& extension) const { return this->has_extension(extension.c_str()); }
-        /* Returns whether or not the given extension is enabled in this Instance. */
-        bool has_extension(const char* extension) const;
-        /* Returns whether or not the given layer is enabled in this Instance. */
-        inline bool has_layer(const std::string& layer) const { return this->has_layer(layer.c_str()); }
-        /* Returns whether or not the given layer is enabled in this Instance. */
-        bool has_layer(const char* layer) const;
-        /* Returns the list of extensions with which the Instance was created. */
-        inline const Tools::Array<const char*>& extensions() const { return this->vk_extensions; }
-        /* Returns the list of layers with which the Instance was created. */
-        inline const Tools::Array<const char*>& layers() const { return this->vk_layers; }
+        /* Returns the list of (supported) PhysicalDevices that are currently registered to the Vulkan backend.
+         * @param vk_surface The VkSurface object used to check if this device can present to that Surface.
+         * @param vk_device_extensions The list of Vulkan GPU extensions that the device should at least support.
+         * @param vk_device_features The list of Vulkan GPU features (as Vulkanic::DeviceFeatures enums) that the device should at least support.
+         * @returns The list of Makma3D-suitable physical devices that we found. Empty if no such devices are present. */
+        Tools::Array<GPU::PhysicalDevice> get_physical_devices(VkSurfaceKHR vk_surface, const Tools::Array<const char*>& vk_device_extensions, const Tools::Array<Vulkanic::DeviceFeature>& vk_device_features) const;
 
         /* Explicitly returns the internal VkInstance object. */
         inline const VkInstance& vk() const { return this->vk_instance; }

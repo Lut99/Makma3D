@@ -47,15 +47,15 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL vk_callback(VkDebugUtilsMessageSeverityFla
     switch(message_severity) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-            logger->logc(Verbosity::details, vulkan_channel, pCallbackData->pMessage);
+            logger->logc(Verbosity::details, vulkan_channel, pCallbackData->pMessage, " (ID: '", pCallbackData->pMessageIdName, "')");
             break;
 
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-            logger->warningc(vulkan_channel, pCallbackData->pMessage);
+            logger->warningc(vulkan_channel, pCallbackData->pMessage, " (ID: '", pCallbackData->pMessageIdName, "')");
             break;
 
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-            logger->errorc(vulkan_channel, pCallbackData->pMessage);
+            logger->errorc(vulkan_channel, pCallbackData->pMessage, " (ID: '", pCallbackData->pMessageIdName, "')");
             break;
 
         default:
@@ -73,7 +73,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL vk_callback(VkDebugUtilsMessageSeverityFla
 
 /***** POPULATE FUNCTIONS *****/
 /* Populates a VkApplicationInfo struct with the application info we hardcoded here. */
-static void populate_application_info(VkApplicationInfo& app_info, const char* application_name, uint32_t application_version) {
+static void populate_application_info(VkApplicationInfo& app_info, const char* application_name, uint32_t application_version, uint32_t makma_version) {
     // Set the struct to 0 and set its type
     app_info = {};
     app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -84,7 +84,7 @@ static void populate_application_info(VkApplicationInfo& app_info, const char* a
 
     // We're not using any well-known engine, so tell Vulkan we're not
     app_info.pEngineName = "Makma3D";
-    app_info.engineVersion = VK_MAKE_VERSION(0, 1, 0);
+    app_info.engineVersion = makma_version;
 
     // Finally, define the minimum API level to use
     app_info.apiVersion = VK_API_VERSION_1_0;
@@ -146,96 +146,19 @@ static PFN_vkVoidFunction load_instance_method(VkInstance vk_instance, const cha
 
 
 /***** INSTANCE CLASS *****/
-/* Constructor for the Instance class, which takes the application name, the application version, a list of extensions to enable at the instance and layers to enable. Create the version with VK_MAKE_VERSION. */
-Instance::Instance(const std::string& application_name, uint32_t application_version, const Tools::Array<const char*>& extensions, const Tools::Array<const char*>& layers) :
+/* Constructor for the Instance class. */
+Instance::Instance() :
+    vk_instance(nullptr),
     vk_debugger(nullptr),
-    vk_destroy_debug_utils_messenger_method(nullptr),
-    vk_extensions(extensions),
-    vk_layers(layers)
-{
-    #ifndef NDEBUG
-    bool found;
-
-    // Next, add in the debug extension (if not there already)
-    found = false;
-    for (uint32_t i = 0; i < this->vk_extensions.size(); i++) {
-        if (strcmp(this->vk_extensions[i], VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0) { found = true; break; }
-    }
-    if (!found) { this->vk_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); }
-
-    // The same for the validation layers
-    found = false;
-    for (uint32_t i = 0; i < this->vk_layers.size(); i++) {
-        if (strcmp(this->vk_layers[i], "VK_LAYER_KHRONOS_validation") == 0) { found = true; break; }
-    }
-    if (!found) { this->vk_layers.push_back("VK_LAYER_KHRONOS_validation"); }
-    #endif
-
-
-
-    // Defining the app & engine description
-    VkApplicationInfo app_info;
-    populate_application_info(app_info, application_name.c_str(), application_version);
-
-    // Setup the list of extensions
-    VkInstanceCreateInfo instance_info;
-    populate_instance_info(instance_info, app_info, this->vk_extensions, this->vk_layers);
-
-    // Now, setup the instance
-    VkResult vk_result;
-    if ((vk_result = vkCreateInstance(&instance_info, nullptr, &this->vk_instance)) != VK_SUCCESS) {
-        logger.fatalc("Could not create the Vulkan instance: ", Instance::channel, vk_error_map[vk_result]);
-    }
-
-    // If we were successfull, print which extensions & layers
-    if (logger.get_verbosity() >= Verbosity::debug) {
-        for (uint32_t i = 0; i < instance_extensions.size(); i++) {
-            logger.logc(Verbosity::debug, Instance::channel, "Enabled extension '", this->vk_extensions[i], '\'');
-        }
-        for (uint32_t i = 0; i < instance_extensions.size(); i++) {
-            logger.logc(Verbosity::debug, Instance::channel, "Enabled layer '", this->vk_layers[i], '\'');
-        }
-    }
-
-
-
-    #ifndef NDEBUG
-    // First, we load the two extension functions needed using the dynamic loader
-    PFN_vkCreateDebugUtilsMessengerEXT vk_create_debug_utils_messenger_method = (PFN_vkCreateDebugUtilsMessengerEXT) load_instance_method(this->vk_instance, "vkCreateDebugUtilsMessengerEXT");
-    this->vk_destroy_debug_utils_messenger_method = (PFN_vkDestroyDebugUtilsMessengerEXT) load_instance_method(this->vk_instance, "vkDestroyDebugUtilsMessengerEXT");
-
-    // Next, define the messenger
-    VkDebugUtilsMessengerCreateInfoEXT debug_info;
-    populate_debug_info(debug_info);
-
-    // And with that, create it
-    if ((vk_result = vk_create_debug_utils_messenger_method(this->vk_instance, &debug_info, nullptr, &this->vk_debugger)) != VK_SUCCESS) {
-        logger.fatalc(Instance::channel, "Could not create the logger: ", vk_error_map[vk_result]);
-    }
-    #endif
-
-
-
-    // Fetch the list of physical devices
-    uint32_t n_physical_devices;
-    vkEnumeratePhysicalDevices(this->vk_instance, &n_physical_devices, nullptr);
-    Tools::Array<VkPhysicalDevice> physical_devices(n_physical_devices);
-    vkEnumeratePhysicalDevices(this->vk_instance, &n_physical_devices, physical_devices.wdata(n_physical_devices));
-
-    // Loop through the list to convert them to physical devices
-    this->_physical_devices.reserve(n_physical_devices);
-    for(uint32_t i = 0; i < n_physical_devices; i++) {
-        this->_physical_devices.push_back(Vulkanic::HardwareGPU(physical_devices[i]));
-    }
-}
+    vk_destroy_debug_utils_messenger_method(nullptr)
+{}
 
 /* Move constructor for the Instance class. */
 Instance::Instance(Instance&& other) :
     vk_instance(other.vk_instance),
+
     vk_debugger(other.vk_debugger),
-    vk_destroy_debug_utils_messenger_method(other.vk_destroy_debug_utils_messenger_method),
-    vk_extensions(other.vk_extensions),
-    vk_layers(other.vk_layers)
+    vk_destroy_debug_utils_messenger_method(other.vk_destroy_debug_utils_messenger_method)
 {
     // Set everything to nullptrs in the other function to avoid deallocation
     other.vk_instance = nullptr;
@@ -257,20 +180,74 @@ Instance::~Instance() {
 
 
 
-/* Returns whether or not the given extension is enabled in this Instance. */
-bool Instance::has_extension(const char* extension) const {
-    for (uint32_t i = 0; i < this->vk_extensions.size(); i++) {
-        if (strcmp(this->vk_extensions[i], extension) == 0) { return true; }
+/* Initializes the instance. */
+void Instance::init(const char* application_name, uint32_t application_version, uint32_t makma_version, const Tools::Array<const char*>& extensions, const Tools::Array<const char*>& layers) {
+    logger.logc(Verbosity::details, Instance::channel, "Initializing Vulkan...");
+
+    // Defining the app & engine description
+    VkApplicationInfo app_info;
+    populate_application_info(app_info, application_name, application_version, makma_version);
+
+    // Setup the list of extensions
+    VkInstanceCreateInfo instance_info;
+    populate_instance_info(instance_info, app_info, extensions, layers);
+
+    // Now, setup the instance
+    VkResult vk_result;
+    if ((vk_result = vkCreateInstance(&instance_info, nullptr, &this->vk_instance)) != VK_SUCCESS) {
+        logger.fatalc("Could not create the Vulkan instance: ", Instance::channel, vk_error_map[vk_result]);
     }
-    return false;
+
+    // If we were successfull, print which extensions & layers
+    if (logger.get_verbosity() >= Verbosity::debug) {
+        for (uint32_t i = 0; i < extensions.size(); i++) {
+            logger.logc(Verbosity::debug, Instance::channel, "Enabled Vulkan extension '", extensions[i], "'.");
+        }
+        for (uint32_t i = 0; i < layers.size(); i++) {
+            logger.logc(Verbosity::debug, Instance::channel, "Enabled Vulkan layer '", layers[i], "'.");
+        }
+    }
 }
 
-/* Returns whether or not the given layer is enabled in this Instance. */
-bool Instance::has_layer(const char* layer) const {
-    for (uint32_t i = 0; i < this->vk_layers.size(); i++) {
-        if (strcmp(this->vk_layers[i], layer) == 0) { return true; }
+/* Initializes the debugging part of the instance. */
+void Instance::init_debug() {
+    logger.logc(Verbosity::details, Instance::channel, "Enabling Vulkan debugger...");
+
+    // First, we load the two extension functions needed using the dynamic loader
+    PFN_vkCreateDebugUtilsMessengerEXT vk_create_debug_utils_messenger_method = (PFN_vkCreateDebugUtilsMessengerEXT) load_instance_method(this->vk_instance, "vkCreateDebugUtilsMessengerEXT");
+    this->vk_destroy_debug_utils_messenger_method = (PFN_vkDestroyDebugUtilsMessengerEXT) load_instance_method(this->vk_instance, "vkDestroyDebugUtilsMessengerEXT");
+
+    // Next, define the messenger
+    VkDebugUtilsMessengerCreateInfoEXT debug_info;
+    populate_debug_info(debug_info);
+
+    // And with that, create it
+    VkResult vk_result;
+    if ((vk_result = vk_create_debug_utils_messenger_method(this->vk_instance, &debug_info, nullptr, &this->vk_debugger)) != VK_SUCCESS) {
+        logger.fatalc(Instance::channel, "Could not create the logger: ", vk_error_map[vk_result]);
     }
-    return false;
+}
+
+
+
+/* Returns the list of (supported) PhysicalDevices that are currently registered to the Vulkan backend. */
+Tools::Array<GPU::PhysicalDevice> Instance::get_physical_devices(VkSurfaceKHR vk_surface, const Tools::Array<const char*>& vk_device_extensions, const Tools::Array<Vulkanic::DeviceFeature>& vk_device_features) const {
+    // Get the devices from Vulkan
+    uint32_t n_physical_devices;
+    vkEnumeratePhysicalDevices(this->vk_instance, &n_physical_devices, nullptr);
+    Tools::Array<VkPhysicalDevice> physical_devices(n_physical_devices);
+    vkEnumeratePhysicalDevices(this->vk_instance, &n_physical_devices, physical_devices.wdata(n_physical_devices));
+
+    // For each of them, check if they are compatible, and add them to the list as a PhysicalDevice if they are
+    Tools::Array<GPU::PhysicalDevice> result(n_physical_devices);
+    for (uint32_t i = 0; i < n_physical_devices; i++) {
+        if (GPU::PhysicalDevice::is_suitable(physical_devices[i], vk_surface, vk_device_extensions, vk_device_features)) {
+            result.push_back(GPU::PhysicalDevice(physical_devices[i], i));
+        }
+    }
+
+    // Done, return
+    return result;
 }
 
 
@@ -280,8 +257,7 @@ void Vulkanic::swap(Instance& i1, Instance& i2) {
     using std::swap;
 
     swap(i1.vk_instance, i2.vk_instance);
+
     swap(i1.vk_debugger, i2.vk_debugger);
     swap(i1.vk_destroy_debug_utils_messenger_method, i2.vk_destroy_debug_utils_messenger_method);
-    swap(i1.vk_extensions, i2.vk_extensions),
-    swap(i1.vk_layers, i2.vk_layers);
 }

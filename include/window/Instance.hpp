@@ -22,29 +22,51 @@
 namespace Makma3D::Windowing {
     /* The Instance class, which forms the baseclass of all API backend Instances. */
     class Instance {
-    protected:
-        /* The primary monitor as told to us by the OS. */
-        const Windowing::Monitor* primary_monitor;
-        /* List of Monitor instances created with the backend. */
-        Tools::Array<const Windowing::Monitor*> monitors;
+    public:
+        /* Channel name for the Instance class. */
+        static constexpr const char* channel = "WindowInstance";
 
-
-        /* Protected constructor for the Instance class, which doesn't do anything except exist. */
-        Instance();
+    private:
+        /* Reference to the Primary monitor in the Instance. */
+        const Windowing::Monitor* _primary;
+        /* The list of monitors as reported by GLFW. */
+        Tools::Array<const Windowing::Monitor*> _monitors;
 
     public:
-        /* Virtual destructor for the Instance class, which is trivial. */
-        virtual ~Instance() = default;
+        /* Constructor for the Instance class. */
+        Instance();
+        /* Copy constructor for the Instance class, which is deleted. */
+        Instance(const Instance& other) = delete;
+        /* Move constructor for the Instance class. */
+        Instance(Instance&& other);
+        /* Destructor for the Instance class. */
+        ~Instance();
 
-        /* Returns a list of Vulkan extensions that should be enabled when using GLFW. */
-        virtual Tools::Array<const char*> get_vulkan_extensions() const = 0;
+        /* Initializes the instance. */
+        void init();
+        /* Initializes the debugging part of the instance. */
+        void init_debug();
 
-        /* Returns the primary monitor. */
-        virtual const Windowing::Monitor* get_primary_monitor() const = 0;
-        /* Returns the list of monitors. */
-        virtual const Tools::Array<const Windowing::Monitor*>& get_monitors() const = 0;
+        /* Returns the list of Vulkan extensions as required by GLFW. */
+        Tools::Array<const char*> get_vulkan_extensions() const;
+
+        /* Returns the primary monitor as given by GLFW. */
+        inline const Windowing::Monitor* get_primary_monitor() const { return this->_primary; }
+        /* Returns the list of available monitors as given by GLFW. */
+        inline const Tools::Array<const Windowing::Monitor*>& get_monitors() const { return this->_monitors; }
+
+        /* Copy assignment operator for the Instance class, which is deleted. */
+        Instance& operator=(const Instance& other) = delete;
+        /* Move assignment operator for the Instance class. */
+        inline Instance& operator=(Instance&& other) { if (this != &other) { swap(*this, other); } return *this; }
+        /* Swap operator for the Instance class. */
+        friend void swap(Instance& i1, Instance& i2);
 
     };
+
+    /* Swap operator for the Instance class. */
+    void swap(Instance& i1, Instance& i2);
+
 }
 
 #endif

@@ -24,8 +24,8 @@ using namespace Makma3D::Vulkanic;
 
 
 /***** SURFACE CLASS *****/
-/* Constructor for the Surface class, which takes an instance with which the surface is create, said surface it's supposed to wrap and the size (in pixels) of the surface's framebuffer. The Surface will be automatically destroyed when the class is. */
-Surface::Surface(const Vulkanic::Instance& instance, const VkSurfaceKHR& vk_surface, const VkExtent2D& extent) :
+/* Constructor for the Surface class. */
+Surface::Surface(const Makma3D::Instance& instance, const VkSurfaceKHR& vk_surface, const VkExtent2D& extent) :
     instance(instance),
     vk_surface(vk_surface),
     _extent(extent)

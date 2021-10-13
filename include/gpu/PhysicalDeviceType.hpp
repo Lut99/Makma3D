@@ -1,4 +1,4 @@
-/* HARDWARE GPUTYPES.hpp
+/* PHYSICAL DEVICE TYPE.hpp
  *   by Lut99
  *
  * Created:
@@ -12,14 +12,14 @@
  *   Contains an enum that lists all possible GPU types.
 **/
 
-#ifndef VULKANIC_HARDWARE_GPU_TYPES_HPP
-#define VULKANIC_HARDWARE_GPU_TYPES_HPP
+#ifndef VULKANIC_PHYSICAL_DEVICE_TYPE_HPP
+#define VULKANIC_PHYSICAL_DEVICE_TYPE_HPP
 
 #include <string>
 
-namespace Makma3D::Vulkanic {
+namespace Makma3D::GPU {
     /* Enum that lists the possible GPU types. Very closely based on Vulkan's VkPhysicalDeviceType enum. */
-    enum class HardwareGPUType {
+    enum class PhysicalDeviceType {
         /* Meta type for when nothing is specified. */
         undefined = 0,
 
@@ -35,8 +35,8 @@ namespace Makma3D::Vulkanic {
         other = 5
     };
 
-    /* Maps HardwareGPUType enum values to readable strings. */
-    static const std::string hardware_gpu_type_names[] = {
+    /* Maps PhysicalDeviceType enum values to readable strings. */
+    static const std::string physical_device_type_names[] = {
         "undefined",
 
         "CPU",

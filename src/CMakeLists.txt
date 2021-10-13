@@ -1,6 +1,6 @@
 # Add the subdirectories
 add_subdirectory(window)
-add_subdirectory(glfw)
+add_subdirectory(gpu)
 add_subdirectory(vulkanic)
 add_subdirectory(instance)
 add_subdirectory(tools)
