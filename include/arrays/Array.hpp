@@ -157,84 +157,168 @@ namespace Makma3D::Tools {
         template <typename U = Array&>
         auto pop_front() -> std::enable_if_t<M, U>;
 
-        /* Inserts a new element at the given location, pushing all elements coming after it one index back. Since we initialise the element with its default constructor, we need that to be present for the Array's element type. Also required is a move assign operator, so the element van be moved around in the array. */
+        /* Inserts a new element at the given location, pushing all elements coming after it one index back. The element is initialized with with its default constructor. 
+         * Requires the Array's elements to have a default constructor and a move constructor (for moving the other elements around).
+         * @param index The index where to insert the new element. To be precise, this will be the index of the new element; the element already there plus all following ones will be pushed back.
+         * @returns A reference to this Array with the new element inserted into it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto insert(SIZE_T index) -> std::enable_if_t<D && M, U>;
-        /* Inserts a copy of the given element at the given location, pushing all elements coming after it one index back. Requires the element to be copy constructible, and to also be move assignable to be moved around in the array. */
+        /* Inserts a copy of the given element at the given location, pushing all elements coming after it one index back. 
+         * Requires the Array's elements to have a copy constructor (for copying the given element) and a move constructor (for moving the other elements around).
+         * @param index The index where to insert the new element. To be precise, this will be the index of the new element; the element already there plus all following ones will be pushed back.
+         * @param elem The element who's copy will be inserted into the array.
+         * @returns A reference to this Array with the new element inserted into it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto insert(SIZE_T index, const T& elem) -> std::enable_if_t<C && M, U>;
-        /* Inserts the given element at the given location, pushing all elements coming after it one index back. Requires the element to be move constructible _and_ move assignable. */
+        /* Inserts the given element at the given location, pushing all elements coming after it one index back. 
+         * Requires the Array's elements to have a move constructor.
+         * @param index The index where to insert the new element. To be precise, this will be the index of the new element; the element already there plus all following ones will be pushed back.
+         * @param elem The element which will be inserted into the array.
+         * @returns A reference to this Array with the new element inserted into it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto insert(SIZE_T index, T&& elem) -> std::enable_if_t<M, U>;
-        /* Erases an element with the given index from the array. Does nothing if the index is out-of-bounds. */
+        /* Erases an element with the given index from the array. 
+         * Does nothing if the index is out-of-bounds.
+         * Requires the Array's elements to have a move constructor, for moving all the elements after the erased one one position back.
+         * @param index The index of the element that should be removed from the Array.
+         * @returns A reference to this Array with the element removed from it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto erase(SIZE_T index) -> std::enable_if_t<M, U>;
-        /* Erases multiple elements in the given (inclusive) range from the array. Does nothing if the any index is out-of-bounds or if the start_index is larger than the stop_index. */
+        /* Erases multiple elements in the given (inclusive) range from the array. 
+         * Does nothing if the any index is out-of-bounds or if the start_index is larger than the stop_index. 
+         * Requires the Array's elements to have a move constructor, for moving all the elements after the erased ones one position back.
+         * @param start_index The index of the first element that should be removed from the Array.
+         * @param stop_index The index of the last element that should be removed from the Array. Makes the range inclusive on both ends.
+         * @returns A reference to this Array with the elements removed from it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto erase(SIZE_T start_index, SIZE_T stop_index) -> std::enable_if_t<M, U>;
 
-        /* Adds a new element of type T to the back of array, initializing it with its default constructor. Only needs a default constructor to be present, but cannot resize itself without a move constructor. */
+        /* Adds a new element of type T to the back of array, initializing it with its default constructor. 
+         * Requires the Array's elements to have a default constructor. If the element also has a move constructor, then the function resizes itself if more capacity is necessary.
+         * @returns A reference to this Array with the new element appended to it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto push_back() -> std::enable_if_t<D, U>;
-        /* Adds a new element of type T to the back of array, copying it. Note that this requires the element to be copy constructible. */
+        /* Adds a new element of type T to the back of array, copying it. 
+         * Requires the Array's elements to have a copy constructor. If the element also has a move constructor, then the function resizes itself if more capacity is necessary.
+         * @returns A reference to this Array with the new element appended to it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto push_back(const T& elem) -> std::enable_if_t<C, U>;
-        /* Adds a new element of type T to the back of array, leaving it in an usused state (moving it). Note that this requires the element to be move constructible. */
+        /* Adds a new element of type T to the back of array, moving it. 
+         * Requires the Array's elements to have a move constructor.
+         * @returns A reference to this Array with the new element appended to it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto push_back(T&& elem) -> std::enable_if_t<M, U>;
-        /* Removes the last element from the array. */
+        /* Removes the last element from the array.
+         * @returns A reference to this Array with the last element removed from it. Useful for calling multiple non-returning functions in succession. */
         Array& pop_back();
 
-        /* Erases everything from the array, but leaves the internally located array intact. */
+        /* Erases everything from the array, but leaves the internally located array intact.
+         * @returns A reference to this Array, which is completely wiped, save for its internal capacity. Useful for calling multiple non-returning functions in succession. */
         Array& clear();
-        /* Erases everything from the array, even removing the internal allocated array. */
+        /* Erases everything from the array, even removing the internal allocated array.
+         * @returns A reference to this Array, which is completely wiped. Useful for calling multiple non-returning functions in succession. */
         Array& reset();
 
-        /* Re-allocates the internal array to the given size. Any leftover elements will be left unitialized, and elements that won't fit will be deallocated. */
+        /* Re-allocates the internal array to the given size. 
+         * Any leftover elements will be left unitialized, and elements that won't fit will be deallocated. 
+         * Requires the Array's elements to have a move constructor, for moving the elements to a newly allocated array.
+         * @param new_capacity The new capacity of the array (in number of elements).
+         * @returns A reference to this Array with the new capacity. Useful for calling multiple non-returning functions in succession.  */
         template <typename U = Array&>
-        auto hard_reserve(SIZE_T new_size) -> std::enable_if_t<M, U>;
-        /* Guarantees that the Array has at least min_size capacity after the call. Does so by reallocating the internal array if we currently have less, but leaving it untouched otherwise. Any new elements will be left unitialized. */
+        auto hard_reserve(SIZE_T new_capacity) -> std::enable_if_t<M, U>;
+        /* Guarantees that the Array has at least min_capacity capacity after the call. 
+         * The array will only be resized if it currently has less size; otherwise, it will be left untouched (unlike hard_reserve). 
+         * Requires the Array's elements to have a move constructor, for moving the elements to a newly allocated array.
+         * @param min_capacity The new capacity of the array (in number of elements).
+         * @returns A reference to this Array with the new capacity. Useful for calling multiple non-returning functions in succession.  */
         template <typename U = Array&>
-        auto reserve(SIZE_T min_size) -> std::enable_if_t<M, U>;
-        /* Resizes the array to the given size. Any leftover elements will be initialized with their default constructor (and thus requires the type to have one), and elements that won't fit will be deallocated. */
+        auto reserve(SIZE_T min_capacity) -> std::enable_if_t<M, U>;
+        /* Resizes the array to the given size. 
+         * Any leftover elements will be initialized with their default constructor, and elements that won't fit will be deallocated. 
+         * Requires the Array's elements to have a default constructor and a move constructor (for moving the elements to a newly allocated array). 
+         * @param new_size The new size of the array (in number of elements). 
+         * @returns A reference to this Array with the new size. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto hard_resize(SIZE_T new_size) -> std::enable_if_t<D && M, U>;
-        /* Resizes the array to the given size. Any leftover elements will be initialized as a copy of the given element (and thus requires the type to have a copy constructor), and elements that won't fit will be deallocated. */
+        /* Resizes the array to the given size. 
+         * Any leftover elements will be initialized as a copy of the given element, and elements that won't fit will be deallocated. 
+         * Requires the Array's elements to have a copy constructor and a move constructor (for moving the elements to a newly allocated array).
+         * @param elem The element to copy in case we need to initialize new elements. 
+         * @param new_size The new size of the array (in number of elements). 
+         * @returns A reference to this Array with the new size. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto hard_resize(const T& elem, SIZE_T new_size) -> std::enable_if_t<C && M, U>;
-        /* Guarantees that the Array has at least min_size size after the call. Does so by reallocating the internal array if we currently have less, but leaving it untouched otherwise. Any leftover elements will be initialized with their default constructor (and thus requires the type to have one). */
+        /* Guarantees that the Array has at least min_size size after the call. 
+         * Any leftover elements will be initialized with their default constructor, but the array will be left untouched if it already has that much elements initialized. 
+         * Requires the Array's elements to have a default constructor and a move constructor (for moving the elements to a newly allocated array). 
+         * @param new_size The new size of the array (in number of elements). 
+         * @returns A reference to this Array with the new size. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto resize(SIZE_T min_size) -> std::enable_if_t<D && M, U>;
-        /* Guarantees that the Array has at least min_size size after the call. Does so by reallocating the internal array if we currently have less, but leaving it untouched otherwise. Any leftover elements will be initialized as a copy of the given element (and thus requires the type to have a copy constructor). */
+        /* Guarantees that the Array has at least min_size size after the call. 
+         * Any leftover elements will be initialized as a copy of the given element, but the array will be left untouched if it already has that much elements initialized. 
+         * Requires the Array's elements to have a copy constructor and a move constructor (for moving the elements to a newly allocated array). 
+         * @param elem The element to copy in case we need to initialize new elements.
+         * @param new_size The new size of the array (in number of elements).
+         * @returns A reference to this Array with the new size. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto resize(const T& elem, SIZE_T min_size) -> std::enable_if_t<C && M, U>;
 
-        /* Returns a muteable reference to the element at the given index. Does not perform any in-of-bounds checking. */
+        /* Returns a muteable reference to the element at the given index. 
+         * Does not perform any in-of-bounds checking.
+         * @param index The index of the element to return. 
+         * @returns A muteable reference to the requested element. */
         inline T& operator[](SIZE_T index) { return this->storage.elements[index]; }
-        /* Returns a constant reference to the element at the given index. Does not perform any in-of-bounds checking. */
+        /* Returns an immuteable reference to the element at the given index. 
+         * Does not perform any in-of-bounds checking.
+         * @param index The index of the element to return. 
+         * @returns An immuteable reference to the requested element. */
         inline const T& operator[](SIZE_T index) const { return this->storage.elements[index]; }
-        /* Returns a muteable reference to the element at the given index. Performs in-of-bounds checks before accessing the element. */
+        /* Returns a muteable reference to the element at the given index. 
+         * Throws errors if the given index is out-of-range.
+         * @param index The index of the element to return. 
+         * @returns A muteable reference to the requested element. */
         T& at(SIZE_T index);
-        /* Returns a constant reference to the element at the given index. Performs in-of-bounds checks before accessing the element. */
+        /* Returns an immuteable reference to the element at the given index. 
+         * Throws errors if the given index is out-of-range.
+         * @param index The index of the element to return. 
+         * @returns An immuteable reference to the requested element. */
         inline const T& at(SIZE_T index) const { return const_cast<Array*>(this)->at(index); }
-        /* Returns the first element in the list. */
+        /* Returns the first element in the list. 
+         * Will do undefined behaviour if the list is empty.
+         * @returns A muteable reference to the first element. */
         inline T& first() { return this->storage.elements[0]; }
-        /* Returns the first element in the list. */
+        /* Returns the first element in the list. 
+         * Will do undefined behaviour if the list is empty.
+         * @returns An immuteable reference to the first element. */
         inline const T& first() const { return this->storage.elements[0]; }
-        /* Returns the last element in the list. */
+        /* Returns the last element in the list. 
+         * Will do undefined behaviour if the list is empty.
+         * @returns A muteable reference to the last element. */
         inline T& last() { return this->storage.elements[this->storage.size - 1]; }
-        /* Returns the last element in the list. */
+        /* Returns the last element in the list. 
+         * Will do undefined behaviour if the list is empty.
+         * @returns An immuteable reference to the last element. */
         inline const T& last() const { return this->storage.elements[this->storage.size - 1]; }
 
-        /* Returns a muteable pointer to the internal data struct. Use this to fill the array using C-libraries, but beware that the array needs to have enough space reserved. Also note that object put here will still be deallocated by the Array using ~T(). The optional new_size parameter is used to update the size() value of the array, so it knows what is initialized and what is not. Leave it at numeric_limits<array_size_t>::max() to leave the array size unchanged. */
+        /* Returns a muteable pointer to the internal data struct. 
+         * Use this to fill the array using C-libraries, but beware that the array needs to have enough space reserved. 
+         * Note that elements put here will still be deallocated by the Array using ~T().
+         * @param new_size If anything else than the maximum value for that integer type, sets the internal size counter to that number. Prevents the need to use resize() (and thus having to allocate elements).
+         * @returns A muteable pointer to the internal data struct. */
         T* wdata(SIZE_T new_size = std::numeric_limits<SIZE_T>::max());
-        /* Returns a constant pointer to the internal data struct. Use this to read from the array using C-libraries, but beware that the array needs to have enough space reserved. */
+        /* Returns an immuteable pointer to the internal data struct. 
+         * Use this to read from the array using C-libraries, but beware that the array needs to have enough space reserved.
+         * @returns An immuteable pointer to the internal data struct. */
         inline const T* rdata() const { return this->storage.elements; }
-        /* Returns true if there are no elements in this array, or false otherwise. */
+        /* Checks if the Array is empty or not.
+         * @returns 'true' if the Array is empty (or more precisely, if its size is 0) or 'false' otherwise. */
         inline bool empty() const { return this->storage.size == 0; }
-        /* Returns the number of elements stored in this Array. */
+        /* Returns the size of the Array.
+         * @returns The number of elements stored in this Array. */
         inline SIZE_T size() const { return this->storage.size; }
-        /* Returns the number of elements this Array can store before resizing. */
+        /* Returns the capacity of the Array.
+         * @returns The number of elements the Array can store before needing to reserve new space. */
         inline SIZE_T capacity() const { return this->storage.capacity; }
 
         /* Swap operator for the Array class. */

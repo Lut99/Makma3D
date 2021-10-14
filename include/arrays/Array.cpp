@@ -233,7 +233,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::pop_front() -> std::enable_if_t<
 
 
 
-/* Inserts a new element at the given location, pushing all elements coming after it one index back. Since we initialise the element with its default constructor, we need that to be present for the Array's element type. */
+/* Inserts a new element at the given location, pushing all elements coming after it one index back. The element is initialized with with its default constructor. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::insert(SIZE_T index) -> std::enable_if_t<D && M, U> {
@@ -262,7 +262,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::insert(SIZE_T index) -> std::ena
     return *this;
 }
 
-/* Inserts a copy of the given element at the given location, pushing all elements coming after it one index back. Requires the element to be copy constructible. */
+/* Inserts a copy of the given element at the given location, pushing all elements coming after it one index back. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::insert(SIZE_T index, const T& elem) -> std::enable_if_t<C && M, U> {
@@ -291,7 +291,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::insert(SIZE_T index, const T& el
     return *this;
 }
 
-/* Inserts the given element at the given location, pushing all elements coming after it one index back. Requires the element to be move constructible. */
+/* Inserts the given element at the given location, pushing all elements coming after it one index back. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::insert(SIZE_T index, T&& elem) -> std::enable_if_t<M, U> {
@@ -320,7 +320,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::insert(SIZE_T index, T&& elem) -
     return *this;
 }
 
-/* Erases an element with the given index from the array. Does nothing if the index is out-of-bounds. Because the elements need to be moved forward, the element is required to be move constructible. */
+/* Erases an element with the given index from the array. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::erase(SIZE_T index) -> std::enable_if_t<M, U> {
@@ -346,7 +346,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::erase(SIZE_T index) -> std::enab
     return *this;
 }
 
-/* Erases multiple elements in the given (inclusive) range from the array. Does nothing if the any index is out-of-bounds or if the start_index is larger than the stop_index. */
+/* Erases multiple elements in the given (inclusive) range from the array. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::erase(SIZE_T start_index, SIZE_T stop_index) -> std::enable_if_t<M, U> {
@@ -376,7 +376,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::erase(SIZE_T start_index, SIZE_T
 
 
 
-/* Adds a new element of type T to the array, initializing it with its default constructor. Only needs a default constructor to be present, but cannot resize itself without a move constructor. */
+/* Adds a new element of type T to the back of array, initializing it with its default constructor. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_back() -> std::enable_if_t<D, U> {
@@ -394,7 +394,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_back() -> std::enable_if_t<
     return *this;
 }
 
-/* Adds a new element of type T to the array, copying it. Note that this requires the element to be copy constructible. */
+/* Adds a new element of type T to the back of array, copying it. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_back(const T& elem) -> std::enable_if_t<C, U> {
@@ -408,7 +408,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_back(const T& elem) -> std:
     return *this;
 }
 
-/* Adds a new element of type T to the array, leaving it in an usused state (moving it). Note that this requires the element to be move constructible. */
+/* Adds a new element of type T to the back of array, moving it. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_back(T&& elem) -> std::enable_if_t<M, U> {
@@ -477,26 +477,26 @@ Makma3D::Tools::Array<T, SIZE_T, D, C, M>& Makma3D::Tools::Array<T, SIZE_T, D, C
 
 
 
-/* Re-allocates the internal array to the given size. Any leftover elements will be left unitialized, and elements that won't fit will be deallocated. Requires a move constructor to be able to actually move them. */
+/* Re-allocates the internal array to the given size. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
-auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::hard_reserve(SIZE_T new_size) -> std::enable_if_t<M, U> {
+auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::hard_reserve(SIZE_T new_capacity) -> std::enable_if_t<M, U> {
     // Do some special cases for the new_size
-    if (new_size == 0) {
+    if (new_capacity == 0) {
         // Simply call reset
         this->reset();
         return *this;
-    } else if (new_size == this->storage.size) {
+    } else if (new_capacity == this->storage.size) {
         // Do nothing
         return *this;
     }
 
     // Start by allocating space for a new array
-    T* new_elements = (T*) malloc(new_size * sizeof(T));
+    T* new_elements = (T*) malloc(new_capacity * sizeof(T));
     if (new_elements == nullptr) { throw std::bad_alloc(); }
 
     // Copy the elements over using their move constructor
-    SIZE_T n_to_copy = std::min(new_size, this->storage.size);
+    SIZE_T n_to_copy = std::min(new_capacity, this->storage.size);
     if constexpr (std::is_trivially_move_constructible<T>::value) {
         memmove(new_elements, this->storage.elements, n_to_copy * sizeof(T));
     } else {
@@ -516,28 +516,28 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::hard_reserve(SIZE_T new_size) ->
     // Finally, put the Array to the internal slot
     this->storage.elements = new_elements;
     this->storage.size = n_to_copy;
-    this->storage.capacity = new_size;
+    this->storage.capacity = new_capacity;
 
     // D0ne
     return *this;
 }
 
-/* Guarantees that the Array has at least min_size capacity after the call. Does so by reallocating the internal array if we currently have less, but leaving it untouched otherwise. Any new elements will be left unitialized. */
+/* Guarantees that the Array has at least min_capacity capacity after the call. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
-auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::reserve(SIZE_T min_size) -> std::enable_if_t<M, U> {
+auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::reserve(SIZE_T min_capacity) -> std::enable_if_t<M, U> {
     // Do some special cases for the new_size
-    if (min_size == 0) {
+    if (min_capacity == 0) {
         // Simply call reset
         this->reset();
         return *this;
-    } else if (min_size <= this->storage.capacity) {
+    } else if (min_capacity <= this->storage.capacity) {
         // Do nothing
         return *this;
     }
 
     // Start by allocating space for a new array
-    T* new_elements = (T*) malloc(min_size * sizeof(T));
+    T* new_elements = (T*) malloc(min_capacity * sizeof(T));
     if (new_elements == nullptr) { throw std::bad_alloc(); }
 
     // Copy the elements over using their move constructor
@@ -554,13 +554,13 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::reserve(SIZE_T min_size) -> std:
 
     // Finally, put the Array to the internal slot
     this->storage.elements = new_elements;
-    this->storage.capacity = min_size;
+    this->storage.capacity = min_capacity;
 
     // D0ne
     return *this;
 }
 
-/* Resizes the array to the given size. Any leftover elements will be initialized with their default constructor (and thus requires the type to have one), and elements that won't fit will be deallocated. */
+/* Resizes the array to the given size. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::hard_resize(SIZE_T new_size) -> std::enable_if_t<D && M, U> {
@@ -576,14 +576,23 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::hard_resize(SIZE_T new_size) -> 
     return *this;
 }
 
-/* Resizes the array to the given size. Any leftover elements will be initialized as a copy of the given element (and thus requires the type to have a copy constructor), and elements that won't fit will be deallocated. */
+/* Resizes the array to the given size. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::hard_resize(const T& elem, SIZE_T new_size) -> std::enable_if_t<C && M, U> {
+    // Simply reserve the space
+    this->hard_reserve(new_size);
 
+    // Populate the other elements with default constructors
+    for (SIZE_T i = this->storage.size; i < new_size; i++) {
+        new(this->storage.elements + this->storage.size++) T(elem);
+    }
+
+    // Done
+    return *this;
 }
 
-/* Guarantees that the Array has at least min_size size after the call. Does so by reallocating the internal array if we currently have less, but leaving it untouched otherwise. Any leftover elements will be initialized with their default constructor (and thus requires the type to have one). */
+/* Guarantees that the Array has at least min_size size after the call. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::resize(SIZE_T min_size) -> std::enable_if_t<D && M, U> {
@@ -599,16 +608,25 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::resize(SIZE_T min_size) -> std::
     return *this;
 }
 
-/* Guarantees that the Array has at least min_size size after the call. Does so by reallocating the internal array if we currently have less, but leaving it untouched otherwise. Any leftover elements will be initialized as a copy of the given element (and thus requires the type to have a copy constructor). */
+/* Guarantees that the Array has at least min_size size after the call. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::resize(const T& elem, SIZE_T min_size) -> std::enable_if_t<C && M, U> {
+    // Simply reserve new space (optimised)
+    this->reserve(min_size);
 
+    // Populate the other elements with default constructors
+    for (SIZE_T i = this->storage.size; i < min_size; i++) {
+        new(this->storage.elements + this->storage.size++) T(elem);
+    }
+
+    // Done
+    return *this;
 }
 
 
 
-/* Returns a muteable reference to the element at the given index. Performs in-of-bounds checks before accessing the element. */
+/* Returns a muteable reference to the element at the given index. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 T& Makma3D::Tools::Array<T, SIZE_T, D, C, M>::at(SIZE_T index) {
     if (index >= this->storage.size) { throw std::out_of_range("Index " + std::to_string(index) + " is out-of-bounds for Array with size " + std::to_string(this->storage.size)); }
