@@ -235,6 +235,7 @@ Tools::Array<PhysicalDevice> Instance::get_physical_devices(VkSurfaceKHR vk_surf
     // Get the devices from Vulkan
     uint32_t n_physical_devices;
     vkEnumeratePhysicalDevices(this->vk_instance, &n_physical_devices, nullptr);
+    if (n_physical_devices == 0) { logger.warningc(Instance::channel, "No Vulkan-capable devices found."); return {}; }
     Tools::Array<VkPhysicalDevice> physical_devices(n_physical_devices);
     vkEnumeratePhysicalDevices(this->vk_instance, &n_physical_devices, physical_devices.wdata(n_physical_devices));
 

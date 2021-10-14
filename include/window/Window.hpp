@@ -106,6 +106,11 @@ namespace Makma3D {
          */
         void set_mode(WindowMode new_mode, const VkExtent2D new_extent, const Monitor* new_monitor);
 
+        /* Returns the physical device that the library thinks is most suited for this window.  
+         * If you want to have more control, get all the available devices with ```get_physical_devices()``` and choose one yourself.
+         * @param preferred_type Can be overriden to let the library look for another type it most prefers. Use 'undefined' to not care, and just choose the first GPU in the list.
+         * @returns The PhysicalDevice with (hopefully) the preferred type. */
+        PhysicalDevice get_preferred_physical_device(PhysicalDeviceType preferred_type = PhysicalDeviceType::discrete) const;
         /* Returns the list of (supported) PhysicalDevices that can render to this Window. */
         Tools::Array<PhysicalDevice> get_physical_devices() const;
 

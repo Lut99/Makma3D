@@ -407,6 +407,25 @@ void Window::set_mode(WindowMode new_mode, const VkExtent2D new_extent, const Mo
 
 
 
+/* Returns the physical device that the library thinks is most suited for this window. */
+PhysicalDevice Window::get_preferred_physical_device(PhysicalDeviceType preferred_type) const {
+    // Get the list of physical devices
+    Tools::Array<PhysicalDevice> physical_devices = this->get_physical_devices();
+    if (physical_devices.empty()) {
+        logger.fatalc(Window::channel, "No supported devices found for Window '", this->_title, "'.");
+    }
+
+    // Go through it to find one with the preferred type
+    for (uint32_t i = 0; i < physical_devices.size(); i++) {
+        if (physical_devices[i].type() == preferred_type) {
+            return physical_devices[i];
+        }
+    }
+
+    // Otherwise, no such device found; return the first
+    return physical_devices.first();
+}
+
 /* Returns the list of (supported) PhysicalDevices that can render to this Window. */
 Tools::Array<PhysicalDevice> Window::get_physical_devices() const {
     // First, compile a list of device extensions & features to enable based on the enabled Makma3D extensions
