@@ -19,9 +19,8 @@
 #include <vulkan/vulkan.h>
 #include "arrays/Array.hpp"
 
-#include "vulkanic/gpu/DeviceFeature.hpp"
-
 #include "PhysicalDeviceType.hpp"
+#include "DeviceFeature.hpp"
 
 namespace Makma3D {
     /* The PhysicalDevice class, which represents a single GPU registered in the Vulkan instance. */

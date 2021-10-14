@@ -32,7 +32,7 @@ namespace Makma3D {
 
         /* The Instance around which this Device is build. */
         const Makma3D::Instance& instance;
-    
+
     private:
         /* The PhysicalDevice around which we wrap. */
         PhysicalDevice physical_device;

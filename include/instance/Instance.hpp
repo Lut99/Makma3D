@@ -20,6 +20,7 @@
 #include <unordered_set>
 
 #include "arrays/Array.hpp"
+#include "gpu/DeviceFeature.hpp"
 #include "window/Instance.hpp"
 #include "vulkanic/instance/Instance.hpp"
 
@@ -67,6 +68,10 @@ namespace Makma3D {
         inline bool extension_enabled(Extension ext) const { return this->extensions.find(ext) != this->extensions.end(); }
         /* Returns a list of enabled Extensions that can be iterated through. */
         Tools::Array<Extension> get_extensions() const;
+        /* Returns a list of Vulkan device extensions, based on the enabled Makma3D extensions + the ones we always require. */
+        Tools::Array<const char*> get_device_extensions() const;
+        /* Returns a list of Vulkan device featyres, based on the enabled Makma3D extensions + the ones we always require. */
+        Tools::Array<Vulkanic::DeviceFeature> get_device_features() const;
 
         /* Returns the primary monitor as given by GLFW. */
         inline const Monitor* get_primary_monitor() const { return this->glfw_instance.get_primary_monitor(); }

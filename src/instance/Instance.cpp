@@ -106,6 +106,24 @@ Tools::Array<Extension> Instance::get_extensions() const {
     return result;
 }
 
+/* Returns a list of Vulkan device extensions, based on the enabled Makma3D extensions + the ones we always require. */
+Tools::Array<const char*> Instance::get_device_extensions() const {
+    Tools::Array<const char*> result = {};
+    for (Extension ext : this->extensions) {
+        /* None, as of yet */
+    }
+    return result;
+}
+
+/* Returns a list of Vulkan device features, based on the enabled Makma3D extensions + the ones we always require. */
+Tools::Array<Vulkanic::DeviceFeature> Instance::get_device_features() const {
+    Tools::Array<Vulkanic::DeviceFeature> result = { Vulkanic::DeviceFeature::anisotropy };
+    for (Extension ext : this->extensions) {
+        /* None, as of yet */
+    }
+    return result;
+}
+
 
 
 /* Swap operator for the Instance class. */

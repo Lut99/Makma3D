@@ -429,11 +429,8 @@ PhysicalDevice Window::get_preferred_physical_device(PhysicalDeviceType preferre
 /* Returns the list of (supported) PhysicalDevices that can render to this Window. */
 Tools::Array<PhysicalDevice> Window::get_physical_devices() const {
     // First, compile a list of device extensions & features to enable based on the enabled Makma3D extensions
-    Tools::Array<const char*> vk_device_extensions = {};
-    Tools::Array<Vulkanic::DeviceFeature> vk_device_features = { Vulkanic::DeviceFeature::anisotropy };
-    for (uint32_t i = 0; i < this->instance.extensions.size(); i++) {
-        /* None, as of yet */
-    }
+    Tools::Array<const char*> vk_device_extensions           = this->instance.get_device_extensions();
+    Tools::Array<Vulkanic::DeviceFeature> vk_device_features = this->instance.get_device_features();
 
     // Call the Vulkan instance's version of this function
     return this->instance.vk_instance.get_physical_devices(this->_surface->vk(), vk_device_extensions, vk_device_features);
