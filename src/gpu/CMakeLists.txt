@@ -1,5 +1,5 @@
 # Specify the libraries in this directory
-add_library(GPU ${CMAKE_CURRENT_SOURCE_DIR}/PhysicalDevice.cpp)
+add_library(GPU ${CMAKE_CURRENT_SOURCE_DIR}/PhysicalDevice.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Device.cpp)
 
 # Set the dependencies for this library:
 target_include_directories(GPU PUBLIC "${INCLUDE_DIRS}")

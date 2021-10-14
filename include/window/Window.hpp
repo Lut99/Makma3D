@@ -66,8 +66,8 @@ namespace Makma3D {
 
     public:
         /* Constructor for the Window class.
-         * @param instance Instance to base the internal Vulkan structures on. Will also be used to select the nearest monitor in case we're going fullscreen from windowed.
-         * @param monitor The Monitor where the Window will be spawned. Will be ignored if the WindowMode is set to windowed.
+         * @param instance Instance to base the internal Vulkan structures on. Will be stored as reference, so please keep in memory. Will also be used to select the nearest monitor in case we're going fullscreen from windowed.
+         * @param monitor The Monitor where the Window will be spawned. Will be ignored if the WindowMode is set to windowed. Will be stored as a reference, so keep in memory somewhere else.
          * @param title String title for the Window.
          * @param extent The desired size (in pixels) of the Window. Will be ignored if the WindowMode is set to windowed fullscreen.
          * @param mode The WindowMode for the Window.

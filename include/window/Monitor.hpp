@@ -49,7 +49,7 @@ namespace Makma3D {
 
     public:
         /* Constructor for the Monitor class.
-         * @param glfw_monitor The GLFWMonitor object that we wrap.
+         * @param glfw_monitor The GLFWMonitor object that we wrap. Won't be copied, so the original has to be kept in memory somewhere.
          * @param index The index of the monitor in the list of monitors.
          */
         Monitor(GLFWmonitor* glfw_monitor, uint32_t index);

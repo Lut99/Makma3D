@@ -28,7 +28,7 @@ namespace Makma3D {
     class PhysicalDevice {
     public:
         /* Channel name for the PhysicalDevice class. */
-        static constexpr const char* channel = "GPUPhysicalDevice";
+        static constexpr const char* channel = "PhysicalDevice";
 
     private:
         /* The VkPhysicalDevice we wrap. */
