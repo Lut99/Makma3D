@@ -40,66 +40,120 @@ namespace Makma3D::Tools {
         _array_intern::ArrayStorage<T, SIZE_T> storage;
 
     public:
-        /* Default constructor for the Array class, which initializes it to not having any elements. */
+        /* Default constructor for the Array class. 
+         * Initialize the Array to have no elements, and no preallocated space.*/
         Array();
-        /* Constructor for the Array class, which takes an initial amount to set its capacity to. Each element will thus be uninitialized. */
-        Array(SIZE_T initial_size);
-        /* Constructor for the Array class, which takes a single element and repeats that the given amount of times. Makes use of the element's copy constructor. */
+        /* Constructor for the Array class, which takes an initial amount to set its capacity to. Each element will thus be uninitialized.
+         * @param initial_capacity The initial capacity of the internal array. */
+        Array(SIZE_T initial_capacity);
+        /* Constructor for the Array class, which takes a single element and repeats that the given amount of times. 
+         * Requires the element to have a copy constructor.
+         * @param elem The value of the element that will be copied for each of the instantiated elements.
+         * @param n_repeats The number of times we should copy the given element. */
         template <typename U = void, typename = std::enable_if_t<C, U>>
         Array(const T& elem, SIZE_T n_repeats);
-        /* Constructor for the Array class, which takes a raw C-style vector to copy elements from and its size. Note that the Array's element type must have a copy custructor defined. */
+        /* Constructor for the Array class, which takes a raw C-style vector to copy elements from and its size. 
+         * Requires the element to have a copy constructor.
+         * @param list The C-style list to copy.
+         * @param list_size The size of the C-style list (in elements). */
         template <typename U = void, typename = std::enable_if_t<C, U>>
         Array(const T* list, SIZE_T list_size);
-        /* Constructor for the Array class, which takes an initializer_list to initialize the Array with. Makes use of the element's copy constructor. */
+        /* Constructor for the Array class, which takes an initializer_list to initialize the Array with. 
+         * Requires the element to have a copy constructor.
+         * @param list The initializer list from which to copy elements. */
         template <typename U = void, typename = std::enable_if_t<C, U>>
         Array(const std::initializer_list<T>& list);
-        /* Constructor for the Array class, which takes a C++-style vector. Note that the Array's element type must have a copy custructor defined. */
+        /* Constructor for the Array class, which takes a C++-style vector. 
+         * Requires the element to have a copy constructor.
+         * @param list The C++ vector who's elements we copy. */
         template <typename U = void, typename = std::enable_if_t<C, U>>
         Array(const std::vector<T>& list);
 
-        /* Creates a new array that is a copy of this array with the given element copied and appended to it. Note that this requires the elements to be copy constructible. */
+        /* Creates a new array that is a copy of this array with the given element copied and appended to it. 
+         * Requires the element to have a copy constructor.
+         * @param elem The element to append to the copy of the Array.
+         * @returns A copy of this Array with the given element appended to it. */
         template <typename U = Array>
         inline auto operator+(const T& elem) const -> std::enable_if_t<C, U> { return Array(*this).operator+=(elem); }
-        /* Creates a new array that is a copy of this array with the given element append to it (moving it). Note that this still requires the elements to have some form of a move constructor defined. */
+        /* Creates a new array that is a copy of this array with the given element append to it (moving it). 
+         * Requires the element to have a copy constructor (for copying the Array) and a move constructor (for moving the element).
+         * @param elem The element to append to the copy of the Array.
+         * @returns A copy of this Array with the given element appended to it. */
         template <typename U = Array>
-        inline auto operator+(T&& elem) const -> std::enable_if_t<M, U> { return Array(*this).operator+=(std::move(elem)); }
-        /* Adds the given element at the end of this array, copying it. Note that this requires the elements to be copy constructible. */
+        inline auto operator+(T&& elem) const -> std::enable_if_t<C && M, U> { return Array(*this).operator+=(std::move(elem)); }
+        /* Adds the given element at the end of this array, copying it. 
+         * Requires the element to have a copy constructor.
+         * @param elem The element to copy and add to the Array.
+         * @returns A reference to this Array with the given element appended to it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         inline auto operator+=(const T& elem) -> std::enable_if_t<C, U> { return this->push_back(elem); }
-        /* Adds the given element at the end of this array, moving it. Note that this still requires the elements to have some form of a move constructor defined. */
+        /* Adds the given element at the end of this array, moving it. 
+         * Requires the element to have a move constructor.
+         * @param elem The element to add to the end of the Array.
+         * @returns A reference to this Array with the given element appended to it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         inline auto operator+=(T&& elem) -> std::enable_if_t<M, U> { return this->push_back(std::move(elem)); }
 
-        /* Addition operator for an element and a mathing Array to prepend it. Requires the element to be copy constructible. */
+        /* Addition operator for an element and a matching Array to prepend it. The Array will be copied before addition. 
+         * Requires the Array's element to have a copy constructor.
+         * @param array The Array who's copy to prepend to.
+         * @param elem The element who's copy should be prepended to the given Array.
+         * @returns A copy of the given Array with the given element appended to it. */
         template <typename U = Array&>
         friend inline auto operator+(const Array& array, const T& elem) -> std::enable_if_t<C, U> { return Array(array).push_front(elem); }
-        /* Addition operator for an element and a mathing Array to prepend it. Requires the element to be move constructible. */
+        /* Addition operator for an element and a matching Array to prepend it. The Array will be copied before addition. 
+         * Requires the Array's element to have a copy constructor (for copying the Array) and a move constructor (for moving the given element).
+         * @param array The Array who's copy to prepend to.
+         * @param elem The element who should be prepended to the given Array.
+         * @returns A copy of the given Array with the given element appended to it. */
         template <typename U = Array&>
-        friend inline auto operator+(const Array& array, T&& elem) -> std::enable_if_t<M, U> { return Array(array).push_front(std::move(elem)); }
+        friend inline auto operator+(const Array& array, T&& elem) -> std::enable_if_t<C && M, U> { return Array(array).push_front(std::move(elem)); }
 
-        /* Creates a new array that is a copy of this array with the elements in the given array copied and appended to them. Note that this requires the elements to be copy constructible. */
+        /* Creates a new array that is a copy of this array with the elements in the given array copied and appended to them. 
+         * Requires the Array's elements to have a copy constructor.
+         * @param elems The list of elements to copy and append to the Array.
+         * @returns A copy of this Array with the given elements appended to it. */
         template <typename U = Array>
         inline auto operator+(const Array& elems) const -> std::enable_if_t<C, U> { return Array(*this).operator+=(elems); }
-        /* Creates a new array that is a copy of this array with the elements in the given array appended to them (moved). Note that this still requires the elements to have some form of a move constructor defined. */
+        /* Creates a new array that is a copy of this array with the elements in the given array appended to them (moving them). 
+         * Requires the Array's elements to have a copy constructor (for copying this Array) and a move constructor (for moving the given elements).
+         * @param elems The list of elements to append to the Array.
+         * @returns A copy of this Array with the given elements appended to it. */
         template <typename U = Array>
-        inline auto operator+(Array&& elems) const -> std::enable_if_t<M, U> { return Array(*this).operator+=(std::move(elems)); }
-        /* Adds a whole array worth of new elements to the array, copying them. Note that this requires the elements to be copy constructible. */
+        inline auto operator+(Array&& elems) const -> std::enable_if_t<C && M, U> { return Array(*this).operator+=(std::move(elems)); }
+        /* Adds a whole array worth of new elements to the array, copying them. 
+         * Requires the Array's elements to have a copy constructor.
+         * @param elems The list of elements to copy and append to the Array.
+         * @returns A reference to this Array with the given elements appended to it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto operator+=(const Array& elems) -> std::enable_if_t<C, U>;
-        /* Adds a whole array worth of new elements to the array, leaving the original array in an unused state (moving it). Note that this still requires the elements to have some form of a move constructor defined. */
+        /* Adds a whole array worth of new elements to the array, moving them.
+         * Requires the Array's elements to have a move constructor.
+         * @param elems The list of elements to append to the Array.
+         * @returns A reference to this Array with the given elements appended to it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto operator+=(Array&& elems) -> std::enable_if_t<M, U>;
 
-        /* Adds a new element of type T to the front of the array, pushing the rest back. The element is initialized with with its default constructor. Needs a default constructor to be present, but also to be move assignable in some way to be moved around in the array. */
+        /* Adds a new element of type T to the front of the array, pushing the rest back. The element is initialized with with its default constructor. 
+         * Requires the Array's elements to have a default constructor and a move constructor (for moving the other elements a place back).
+         * @returns A reference to this Array with the new element prepended to it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto push_front() -> std::enable_if_t<D && M, U>;
-        /* Adds a new element of type T to the front of the array, pushing the rest back. The element is copied using its copy constructor, which it is required to have. Also required to be move assignable to be moved around. */
+        /* Adds a new element of type T to the front of the array, pushing the rest back. The element is initialized as a copy of the given element. 
+         * Requires the Array's elements to have a copy constructor (for copying the given element) and a move constructor (for moving the other elements a place back).
+         * @param elem The element to copy and to add.
+         * @returns A reference to this Array with the new element prepended to it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto push_front(const T& elem) -> std::enable_if_t<C && M, U>;
-        /* Adds a new element of type T to the front of the array, pushing the rest back. The element is left in an usused state (moving it). Note that this requires the element to be move constructible. Also required to be move assignable to be moved around. */
+        /* Adds the given element to the front of the array, pushing the rest back. 
+         * Requires the Array's elements to have a move constructor.
+         * @param elem The element to add.
+         * @returns A reference to this Array with the new element prepended to it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto push_front(T&& elem) -> std::enable_if_t<M, U>;
-        /* Removes the first element from the array, moving the rest one index to the front. Needs to be move assignable to do the moving. */
+        /* Removes the first element from the array, moving the rest one index to the front. 
+         * Requires the Array's elements to have a move constructor.
+         * @returns A reference to this Array with the first element removed from it. Useful for calling multiple non-returning functions in succession. */
         template <typename U = Array&>
         auto pop_front() -> std::enable_if_t<M, U>;
 
@@ -145,9 +199,15 @@ namespace Makma3D::Tools {
         /* Resizes the array to the given size. Any leftover elements will be initialized with their default constructor (and thus requires the type to have one), and elements that won't fit will be deallocated. */
         template <typename U = Array&>
         auto hard_resize(SIZE_T new_size) -> std::enable_if_t<D && M, U>;
+        /* Resizes the array to the given size. Any leftover elements will be initialized as a copy of the given element (and thus requires the type to have a copy constructor), and elements that won't fit will be deallocated. */
+        template <typename U = Array&>
+        auto hard_resize(const T& elem, SIZE_T new_size) -> std::enable_if_t<C && M, U>;
         /* Guarantees that the Array has at least min_size size after the call. Does so by reallocating the internal array if we currently have less, but leaving it untouched otherwise. Any leftover elements will be initialized with their default constructor (and thus requires the type to have one). */
         template <typename U = Array&>
         auto resize(SIZE_T min_size) -> std::enable_if_t<D && M, U>;
+        /* Guarantees that the Array has at least min_size size after the call. Does so by reallocating the internal array if we currently have less, but leaving it untouched otherwise. Any leftover elements will be initialized as a copy of the given element (and thus requires the type to have a copy constructor). */
+        template <typename U = Array&>
+        auto resize(const T& elem, SIZE_T min_size) -> std::enable_if_t<C && M, U>;
 
         /* Returns a muteable reference to the element at the given index. Does not perform any in-of-bounds checking. */
         inline T& operator[](SIZE_T index) { return this->storage.elements[index]; }

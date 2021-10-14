@@ -20,21 +20,21 @@
 
 
 /***** ARRAY CLASS *****/
-/* Default constructor for the Array class, which initializes it to not having any elements. */
+/* Default constructor for the Array class. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 Makma3D::Tools::Array<T, SIZE_T, D, C, M>::Array() {}
 
 /* Constructor for the Array class, which takes an initial amount to set its capacity to. Each element will thus be uninitialized. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
-Makma3D::Tools::Array<T, SIZE_T, D, C, M>::Array(SIZE_T initial_size) {
+Makma3D::Tools::Array<T, SIZE_T, D, C, M>::Array(SIZE_T initial_capacity) {
     // Allocate memory for the internal storage class
-    this->storage.capacity = initial_size;
+    this->storage.capacity = initial_capacity;
     this->storage.elements = (T*) malloc(this->storage.capacity * sizeof(T));
     if (this->storage.elements == nullptr) { throw std::bad_alloc(); }
     
 }
 
-/* Constructor for the Array class, which takes a single element and repeats that the given amount of times. Makes use of the element's copy constructor. */
+/* Constructor for the Array class, which takes a single element and repeats that the given amount of times. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U, typename>
 Makma3D::Tools::Array<T, SIZE_T, D, C, M>::Array(const T& elem, SIZE_T n_repeats) :
@@ -46,7 +46,7 @@ Makma3D::Tools::Array<T, SIZE_T, D, C, M>::Array(const T& elem, SIZE_T n_repeats
     }
 }
 
-/* Constructor for the Array class, which takes a raw C-style vector to copy elements from and its size. Note that the Array's element type must have a copy custructor defined. */
+/* Constructor for the Array class, which takes a raw C-style vector to copy elements from and its size. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U, typename>
 Makma3D::Tools::Array<T, SIZE_T, D, C, M>::Array(const T* list, SIZE_T list_size) :
@@ -63,14 +63,14 @@ Makma3D::Tools::Array<T, SIZE_T, D, C, M>::Array(const T* list, SIZE_T list_size
     }
 }
 
-/* Constructor for the Array class, which takes an initializer_list to initialize the Array with. Makes use of the element's copy constructor. */
+/* Constructor for the Array class, which takes an initializer_list to initialize the Array with. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U, typename>
 Makma3D::Tools::Array<T, SIZE_T, D, C, M>::Array(const std::initializer_list<T>& list) :
     Array(list.begin(), static_cast<SIZE_T>(list.size()))
 {}
 
-/* Constructor for the Array class, which takes a C++-style vector. Note that the Array's element type must have a copy custructor defined. */
+/* Constructor for the Array class, which takes a C++-style vector. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U, typename>
 Makma3D::Tools::Array<T, SIZE_T, D, C, M>::Array(const std::vector<T>& list) :
@@ -79,7 +79,7 @@ Makma3D::Tools::Array<T, SIZE_T, D, C, M>::Array(const std::vector<T>& list) :
 
 
 
-/* Adds a whole array worth of new elements to the array, copying them. Note that this requires the elements to be copy constructible. */
+/* Adds a whole array worth of new elements to the array, copying them. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::operator+=(const Array& elems) -> std::enable_if_t<C, U> {
@@ -102,7 +102,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::operator+=(const Array& elems) -
     return *this;
 }
 
-/* Adds a whole array worth of new elements to the array, leaving the original array in an unused state (moving it). Note that this still requires the elements to have some form of a move constructor defined. */
+/* Adds a whole array worth of new elements to the array, moving them. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::operator+=(Array&& elems) -> std::enable_if_t<M, U> {
@@ -131,7 +131,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::operator+=(Array&& elems) -> std
 
 
 
-/* Adds a new element of type T to the front of the array, pushing the rest back. The element is initialized with with its default constructor. Needs a default constructor to be present, but also to be move assignable in some way to be moved around in the array. */
+/* Adds a new element of type T to the front of the array, pushing the rest back. The element is initialized with with its default constructor. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_front() -> std::enable_if_t<D && M, U> {
@@ -155,7 +155,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_front() -> std::enable_if_t
     return *this;
 }
 
-/* Adds a new element of type T to the front of the array, pushing the rest back. The element is copied using its copy constructor, which it is required to have. Also required to be move assignable to be moved around. */
+/* Adds a new element of type T to the front of the array, pushing the rest back. The element is initialized as a copy of the given element. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_front(const T& elem) -> std::enable_if_t<C && M, U> {
@@ -179,7 +179,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_front(const T& elem) -> std
     return *this;
 }
 
-/* Adds a new element of type T to the front of the array, pushing the rest back. The element is left in an usused state (moving it). Note that this requires the element to be move constructible. Also required to be move assignable to be moved around. */
+/* Adds the given element to the front of the array, pushing the rest back. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_front(T&& elem) -> std::enable_if_t<M, U> {
@@ -203,7 +203,7 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::push_front(T&& elem) -> std::ena
     return *this;
 }
 
-/* Removes the first element from the array, moving the rest one index to the front. Needs to be move assignable to do the moving. */
+/* Removes the first element from the array, moving the rest one index to the front. */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
 auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::pop_front() -> std::enable_if_t<M, U> {
@@ -576,6 +576,13 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::hard_resize(SIZE_T new_size) -> 
     return *this;
 }
 
+/* Resizes the array to the given size. Any leftover elements will be initialized as a copy of the given element (and thus requires the type to have a copy constructor), and elements that won't fit will be deallocated. */
+template <class T, class SIZE_T, bool D, bool C, bool M>
+template <typename U>
+auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::hard_resize(const T& elem, SIZE_T new_size) -> std::enable_if_t<C && M, U> {
+
+}
+
 /* Guarantees that the Array has at least min_size size after the call. Does so by reallocating the internal array if we currently have less, but leaving it untouched otherwise. Any leftover elements will be initialized with their default constructor (and thus requires the type to have one). */
 template <class T, class SIZE_T, bool D, bool C, bool M>
 template <typename U>
@@ -590,6 +597,13 @@ auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::resize(SIZE_T min_size) -> std::
 
     // Done
     return *this;
+}
+
+/* Guarantees that the Array has at least min_size size after the call. Does so by reallocating the internal array if we currently have less, but leaving it untouched otherwise. Any leftover elements will be initialized as a copy of the given element (and thus requires the type to have a copy constructor). */
+template <class T, class SIZE_T, bool D, bool C, bool M>
+template <typename U>
+auto Makma3D::Tools::Array<T, SIZE_T, D, C, M>::resize(const T& elem, SIZE_T min_size) -> std::enable_if_t<C && M, U> {
+
 }
 
 
